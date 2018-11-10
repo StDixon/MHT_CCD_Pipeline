@@ -8,7 +8,7 @@ Created on Tue Oct 30 15:48:06 2018
 
 # import functions
 
-import os, shutil, time
+import os, shutil
 from astropy.io import fits
 
 # function definitions
@@ -58,34 +58,13 @@ def splitFilters(source_dir):
                 except KeyError:
                     print("No FILTER in Header")
 
+#dir.copyFiles(source_dir,input_dir)
 
+#dir.moveImageType(input_dir,image_bias,bias_dir)
+#dir.moveImageType(input_dir,image_dark,dark_dir)
+#dir.moveImageType(input_dir,image_flat,flat_dir)
+#dir.moveImageType(input_dir,image_science,science_dir)
 
-source_dir = 'samples'
-input_dir = 'working/input'
-bias_dir = 'working/calibration/bias'
-dark_dir = 'working/calibration/dark'
-flat_dir = 'working/calibration/flat'
-master_dir = 'working/calibration/masters'
-science_dir = 'working/science'
-output_dir = 'working/output'
-
-directoryList = (input_dir,bias_dir,dark_dir,flat_dir,master_dir,science_dir,output_dir)
-
-createWorkingDirectories(directoryList)
-
-copyFiles(source_dir,input_dir)
-    
-image_bias = 'Bias Frame'
-image_dark = 'Dark Frame'
-image_flat = 'Flat Field'
-image_science = 'Light Frame'
-
-moveImageType(input_dir,image_bias,bias_dir)
-moveImageType(input_dir,image_dark,dark_dir)
-moveImageType(input_dir,image_flat,flat_dir)
-moveImageType(input_dir,image_science,science_dir)
-
-splitFilters(flat_dir)
-
+#dir.splitFilters(flat_dir)
 
     

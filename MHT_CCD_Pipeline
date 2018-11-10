@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Nov  5 10:31:38 2018
+
+@author: sdixon
+"""
+
+import os, shutil
+import directories as dir
+import collection as col
+from ccdproc import ImageFileCollection
+from ccdproc import CCDData
+import numpy as np
+import ccdproc
+from astropy import units as u
+
+source_dir = 'samples'
+bias_dir = 'working/calibration/bias'
+dark_dir = 'working/calibration/dark'
+flat_dir = 'working/calibration/flat'
+master_dir = 'working/calibration/masters'
+science_dir = 'working/science'
+output_dir = 'working/output'
+
+keywords = ("IMAGETYP", "FILTER", "OBJECT", "EXPOSURE", "EXPTIME", "CCDTEMP")
+keywords = ("IMAGETYP", "FILTER", "OBJECT", "EXPOSURE")
+
+directoryList = (bias_dir,dark_dir,flat_dir,science_dir,master_dir,output_dir)
+
+print('Create Directories')
+dir.createWorkingDirectories(directoryList)
+
+ic = ImageFileCollection(source_dir, keywords)
+table = ic.summary
+imagetypes = np.unique(table['IMAGETYP'].data).tolist()
+
+image_bias = 'Bias Frame'
+image_dark = 'Dark Frame'
+image_flat = 'Flat Field'
+image_science = 'Light Frame'
+
+bias_keys = {'IMAGETYP': image_bias}
+dark_keys =  {'IMAGETYP': image_dark}
+flat_keys =  {'IMAGETYP': image_flat}
+science_keys =  {'IMAGETYP': image_science}
+
+imageList = (image_bias, image_dark, image_flat, image_science)
+
+print('Copy Images')
+#col.copyImageTypes(ic,directoryList,imageList)
+
+bias_names = col.fileNames(ic,bias_keys)
+bias_names_full = col.fileNames(ic,bias_keys,include_path=True)
+dark_names = col.fileNames(ic,dark_keys)
+flat_names = col.fileNames(ic,flat_keys)
+science_names = col.fileNames(ic,science_keys)
+
+print('Create Collections')
+bias_ic = ImageFileCollection(bias_dir, keywords)
+bias_table = bias_ic.summary
+
+flat_ic = ImageFileCollection(flat_dir, keywords)
+flat_table = flat_ic.summary
+
+flat_filters = np.unique(flat_table['FILTER'].data).tolist()
+flat_exposures = np.unique(flat_table['EXPOSURE'].data).tolist()
+ 
+dark_ic = ImageFileCollection(dark_dir, keywords)
+dark_table = dark_ic.summary
+
+dark_exposures = np.unique(dark_table['EXPOSURE'].data).tolist()
+ 
+science_ic = ImageFileCollection(science_dir, keywords)
+science_table = science_ic.summary
+
+science_filters = np.unique(science_table['FILTER'].data).tolist()
+science_objects = np.unique(science_table['OBJECT'].data).tolist()
+science_exposures = np.unique(science_table['EXPOSURE'].data).tolist()
+
+print('Copy Filters')
+col.copyFilters(flat_ic,flat_dir,flat_filters)
+col.copyFilters(science_ic,science_dir,science_filters)
+
+print('Copy Exposures')
+col.copyExposures(dark_ic,dark_dir,dark_exposures)
+
+print('Create Master Bias')
+bias_list = []
+for filename in bias_ic.files_filtered(imagetyp=image_bias):
+    path_file = os.path.join(bias_ic.location,filename)
+    ccd = CCDData.read(path_file, unit = u.adu)
+    #this has to be fixed as the bias section does not include the whole section that will be trimmed
+    #ccd = ccdproc.subtract_overscan(ccd, median=True,  overscan_axis=0, fits_section='[1:966,4105:4190]')
+    #ccd = ccdproc.trim_image(ccd, fits_section=ccd.header['TRIMSEC'] )
+    bias_list.append(ccd)
+    
+master_bias = ccdproc.combine(bias_list, method='median')
+#master_bias_blue.write('master_bias_blue.fits', clobber=True)
+
+m_bias_file = os.path.join(master_dir,'master_bias.fit')
+
+master_bias.write(m_bias_file, overwrite=True)
+
+print('Create Master Darks')
+dark_list = []
+for filename in dark_ic.files_filtered(imagetyp=image_dark):
+    path_file = os.path.join(dark_ic.location,filename)
+    ccd = CCDData.read(path_file, unit = u.adu)
+    #this has to be fixed as the bias section does not include the whole section that will be trimmed
+    #ccd = ccdproc.subtract_overscan(ccd, median=True,  overscan_axis=0, fits_section='[1:966,4105:4190]')
+    #ccd = ccdproc.trim_image(ccd, fits_section=ccd.header['TRIMSEC'] )
+    dark_list.append(ccd)
+    
+master_dark = ccdproc.combine(dark_list, method='median')
+#master_bias_blue.write('master_bias_blue.fits', clobber=True)
+
+m_dark_file = os.path.join(master_dir,'master_dark.fit')
+
+master_bias.write(m_bias_file, overwrite=True)
