@@ -119,6 +119,22 @@ for filterType in flat_filters:
     masterFilebr = 'master_flat_' + filterType + '_br.fit'
     col.removeBias(master_dir,'master_bias.fit',masterFile,masterFilebr)
 
+print('Dark Removal')
+
+master_file = os.path.join(master_dir,'master_dark_br.fit')
+print(repr(master_file))
+ccd = CCDData.read(master_file)
+print(repr(ccd.header))
+dark_file = os.path.join(master_dir,'master_flat_B_br.fit')
+print(repr(dark_file))
+master = CCDData.read(dark_file)
+print(repr(master.header))
+master_brds = ccdproc.subtract_dark(ccd=ccd,master=master,exposure_time='EXPTIME',exposure_unit=u.second,scale=True)
+
+mbrds_file = os.path.join(master_dir,'master_flat_B_br_ds.fit')
+
+master_brds.write(mbrds_file, overwrite=True)
+
 
 
 
