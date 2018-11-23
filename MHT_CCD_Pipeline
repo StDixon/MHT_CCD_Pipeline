@@ -62,14 +62,21 @@ bias_table = bias_ic.summary
 
 flat_ic = ImageFileCollection(flat_dir, keywords)
 flat_table = flat_ic.summary
+print(repr(flat_table))
 
 flat_filters = np.unique(flat_table['FILTER'].data).tolist()
 flat_exposures = np.unique(flat_table['EXPOSURE'].data).tolist()
- 
+
+print('Flat Exposures')
+print(repr(flat_exposures))
+
 dark_ic = ImageFileCollection(dark_dir, keywords)
 dark_table = dark_ic.summary
 
 dark_exposures = np.unique(dark_table['EXPOSURE'].data).tolist()
+
+print('Dark Exposures')
+print(repr(dark_exposures))
  
 science_ic = ImageFileCollection(science_dir, keywords)
 science_table = science_ic.summary
@@ -77,6 +84,10 @@ science_table = science_ic.summary
 science_filters = np.unique(science_table['FILTER'].data).tolist()
 science_objects = np.unique(science_table['OBJECT'].data).tolist()
 science_exposures = np.unique(science_table['EXPOSURE'].data).tolist()
+
+print('Science Exposures')
+print(repr(science_exposures))
+print(repr(science_table))
 
 print('Copy Filters')
 col.copyFilters(flat_ic,flat_dir,flat_filters)
@@ -86,35 +97,14 @@ print('Copy Exposures')
 col.copyExposures(dark_ic,dark_dir,dark_exposures)
 
 print('Create Master Bias')
-bias_list = []
-for filename in bias_ic.files_filtered(imagetyp=image_bias):
-    path_file = os.path.join(bias_ic.location,filename)
-    ccd = CCDData.read(path_file, unit = u.adu)
-    #this has to be fixed as the bias section does not include the whole section that will be trimmed
-    #ccd = ccdproc.subtract_overscan(ccd, median=True,  overscan_axis=0, fits_section='[1:966,4105:4190]')
-    #ccd = ccdproc.trim_image(ccd, fits_section=ccd.header['TRIMSEC'] )
-    bias_list.append(ccd)
-    
-master_bias = ccdproc.combine(bias_list, method='median')
-#master_bias_blue.write('master_bias_blue.fits', clobber=True)
-
-m_bias_file = os.path.join(master_dir,'master_bias.fit')
-
-master_bias.write(m_bias_file, overwrite=True)
+col.createMasters(bias_ic,master_dir,'master_bias.fit',image_bias,'')
 
 print('Create Master Darks')
-dark_list = []
-for filename in dark_ic.files_filtered(imagetyp=image_dark):
-    path_file = os.path.join(dark_ic.location,filename)
-    ccd = CCDData.read(path_file, unit = u.adu)
-    #this has to be fixed as the bias section does not include the whole section that will be trimmed
-    #ccd = ccdproc.subtract_overscan(ccd, median=True,  overscan_axis=0, fits_section='[1:966,4105:4190]')
-    #ccd = ccdproc.trim_image(ccd, fits_section=ccd.header['TRIMSEC'] )
-    dark_list.append(ccd)
-    
-master_dark = ccdproc.combine(dark_list, method='median')
-#master_bias_blue.write('master_bias_blue.fits', clobber=True)
+col.createMasters(dark_ic,master_dir,'master_dark.fit',image_dark,'')
 
-m_dark_file = os.path.join(master_dir,'master_dark.fit')
+print('Create Master Flats')
+for filterType in flat_filters:
+    print('Create Master Flat ' + filterType)
+    masterFile = 'master_flat_' + filterType + '.fit'
+    col.createMasters(flat_ic,master_dir,masterFile,image_flat,filterType)
 
-master_bias.write(m_bias_file, overwrite=True)

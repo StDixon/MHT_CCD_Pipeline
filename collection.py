@@ -14,6 +14,8 @@ from ccdproc import ImageFileCollection
 import ccdproc
 import numpy as np
 import re
+from ccdproc import CCDData
+from astropy import units as u
 
 # function definitions
 
@@ -49,7 +51,27 @@ def copyExposures(ImageCollection, source_dir, exposures):
             for hdu in ImageCollection.hdus(save_location=dest_dir, exposure=e, overwrite=True):
                 pass
 
+def createMasters(ImageCollection,Directory,Filename,ImageType,Filters=''):
+    master_list = []
+    if Filters == '':
+        fnames = ImageCollection.files_filtered(imagetyp=ImageType)
+    else:
+        fnames = ImageCollection.files_filtered(imagetyp=ImageType,filter=Filters)
+        
+    for fname in fnames:
+        path_file = os.path.join(ImageCollection.location,fname)
+        ccd = CCDData.read(path_file, unit = u.adu)
+        #this has to be fixed as the bias section does not include the whole section that will be trimmed
+        #ccd = ccdproc.subtract_overscan(ccd, median=True,  overscan_axis=0, fits_section='[1:966,4105:4190]')
+        #ccd = ccdproc.trim_image(ccd, fits_section=ccd.header['TRIMSEC'] )
+        master_list.append(ccd)
+    
+    master = ccdproc.combine(master_list, method='median')
+    #master_bias_blue.write('master_bias_blue.fits', clobber=True)
 
+    m_file = os.path.join(Directory,Filename)
+
+    master.write(m_file, overwrite=True)
 
 
     
