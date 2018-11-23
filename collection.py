@@ -73,5 +73,14 @@ def createMasters(ImageCollection,Directory,Filename,ImageType,Filters=''):
 
     master.write(m_file, overwrite=True)
 
+def removeBias(Directory, BiasFilename, SourceFilename, DestFilename):
+    master_file = os.path.join(Directory,BiasFilename)
+    ccd = CCDData.read(master_file)
+    bias_file = os.path.join(Directory,SourceFilename)
+    master = CCDData.read(bias_file)
+    master_br = ccdproc.subtract_bias(ccd,master)
 
+    mbr_file = os.path.join(Directory,DestFilename)
+
+    master_br.write(mbr_file, overwrite=True)
     
