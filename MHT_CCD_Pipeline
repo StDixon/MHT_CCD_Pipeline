@@ -23,6 +23,12 @@ master_dir = 'working/calibration/masters'
 science_dir = 'working/science'
 output_dir = 'working/output'
 
+bias_removal_suffix = '_br'
+dark_subtract_suffix = '_ds'
+master_bias_name = 'master_bias'
+master_dark_name = 'master_dark'
+master_flat_name = 'master_flat'
+
 keywords = ("IMAGETYP", "FILTER", "OBJECT", "EXPOSURE", "EXPTIME", "CCDTEMP")
 keywords = ("IMAGETYP", "FILTER", "OBJECT", "EXPOSURE")
 
@@ -97,45 +103,57 @@ print('Copy Exposures')
 col.copyExposures(dark_ic,dark_dir,dark_exposures)
 
 print('Create Master Bias')
-#col.createMasters(bias_ic,master_dir,'master_bias.fit',image_bias,'')
+col.createMasters(bias_ic,master_dir,master_bias_name+'.fit',image_bias,'')
 
 print('Create Master Darks')
-#col.createMasters(dark_ic,master_dir,'master_dark.fit',image_dark,'')
+col.createMasters(dark_ic,master_dir,master_dark_name+'.fit',image_dark,'')
 
 print('Create Master Flats')
 for filterType in flat_filters:
     print('Create Master Flat ' + filterType)
-    masterFile = 'master_flat_' + filterType + '.fit'
-    #col.createMasters(flat_ic,master_dir,masterFile,image_flat,filterType)
+    masterFile = master_flat_name + '_' + filterType + '.fit'
+    col.createMasters(flat_ic,master_dir,masterFile,image_flat,filterType)
 
 print('Bias Removal')
 print('Bias Removal from Dark')
-col.removeBias(master_dir,'master_bias.fit','master_dark.fit','master_dark_br.fit')
+col.removeBias(master_dir,master_dir,master_dir,master_bias_name+'.fit',master_dark_name+'.fit',master_dark_name + bias_removal_suffix +'.fit')
 
 print('Bias Removal from Flats')
 for filterType in flat_filters:
     print('Bias Removal from Flat ' + filterType)
-    masterFile = 'master_flat_' + filterType + '.fit'
-    masterFilebr = 'master_flat_' + filterType + '_br.fit'
-    col.removeBias(master_dir,'master_bias.fit',masterFile,masterFilebr)
+    masterFile = master_flat_name+'_' + filterType + '.fit'
+    masterFilebr = master_flat_name +'_' + filterType + bias_removal_suffix +'.fit'
+    col.removeBias(master_dir,master_dir,master_dir,master_bias_name+'.fit',masterFile,masterFilebr)
 
-print('Dark Removal')
-
-master_file = os.path.join(master_dir,'master_dark_br.fit')
-print(repr(master_file))
-ccd = CCDData.read(master_file)
-print(repr(ccd.header))
-dark_file = os.path.join(master_dir,'master_flat_B_br.fit')
-print(repr(dark_file))
-master = CCDData.read(dark_file)
-print(repr(master.header))
-master_brds = ccdproc.subtract_dark(ccd=ccd,master=master,exposure_time='EXPTIME',exposure_unit=u.second,scale=True)
-
-mbrds_file = os.path.join(master_dir,'master_flat_B_br_ds.fit')
-
-master_brds.write(mbrds_file, overwrite=True)
+print('Dark Removal from Flats')
+for filterType in flat_filters:
+    print('Dark Removal from Flat ' + filterType)
+    masterFilebr = master_flat_name +'_' + filterType + bias_removal_suffix +'.fit'
+    masterFilebrds = master_flat_name +'_' + filterType + bias_removal_suffix + dark_subtract_suffix + '.fit'
+    col.removeDark(master_dir,master_dir,master_dir,master_dark_name + bias_removal_suffix +'.fit',masterFilebr,masterFilebrds)
 
 
+print('Reduce Science File')
+
+print('Remove Bias & Dark')
+for fname in science_ic.files:
+    fname_noext = os.path.splitext(fname)[0]
+    print(repr(fname_noext))
+    col.removeBias(master_dir,science_dir,output_dir,master_bias_name+'.fit',fname,fname_noext + bias_removal_suffix +'.fit')
+    col.removeDark(master_dir,output_dir,output_dir,master_dark_name+ bias_removal_suffix +'.fit',fname_noext + bias_removal_suffix+'.fit',fname_noext + bias_removal_suffix+dark_subtract_suffix +'.fit')
+
+
+print('Flat Correction')
+
+master_file = os.path.join(output_dir,'science1'+ bias_removal_suffix + dark_subtract_suffix +'.fit')
+ccd = CCDData.read(master_file, unit = u.adu)
+flat_file = os.path.join(master_dir, 'master_flat_B'+ bias_removal_suffix + dark_subtract_suffix +'.fit')
+master = CCDData.read(flat_file, unit = u.adu)
+master_red = ccdproc.flat_correct(ccd=ccd, flat=master)
+    
+mbrds_file = os.path.join(output_dir,'science1_red.fit')
+
+master_red.write(mbrds_file, overwrite=True)
 
 
 

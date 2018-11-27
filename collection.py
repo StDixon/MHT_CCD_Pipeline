@@ -73,14 +73,26 @@ def createMasters(ImageCollection,Directory,Filename,ImageType,Filters=''):
 
     master.write(m_file, overwrite=True)
 
-def removeBias(Directory, BiasFilename, SourceFilename, DestFilename):
-    master_file = os.path.join(Directory,BiasFilename)
-    ccd = CCDData.read(master_file)
-    bias_file = os.path.join(Directory,SourceFilename)
-    master = CCDData.read(bias_file)
+def removeBias(Bias_Directory,Master_Directory,Dest_Directory, BiasFilename, SourceFilename, DestFilename):
+    master_file = os.path.join(Master_Directory,SourceFilename)
+    ccd = CCDData.read(master_file, unit = u.adu)
+    bias_file = os.path.join(Bias_Directory,BiasFilename)
+    master = CCDData.read(bias_file, unit = u.adu)
     master_br = ccdproc.subtract_bias(ccd,master)
 
-    mbr_file = os.path.join(Directory,DestFilename)
+    mbr_file = os.path.join(Dest_Directory,DestFilename)
 
     master_br.write(mbr_file, overwrite=True)
+
+
+def removeDark(Dark_Directory,Master_Directory,Dest_Directory, DarkFilename, SourceFilename, DestFilename):
+    master_file = os.path.join(Master_Directory,SourceFilename)
+    ccd = CCDData.read(master_file, unit = u.adu)
+    dark_file = os.path.join(Dark_Directory,DarkFilename)
+    master = CCDData.read(dark_file, unit = u.adu)
+    master_brds = ccdproc.subtract_dark(ccd=ccd,master=master,exposure_time='EXPTIME',exposure_unit=u.second,scale=True)
+    
+    mbrds_file = os.path.join(Dest_Directory,DestFilename)
+
+    master_brds.write(mbrds_file, overwrite=True)
     
