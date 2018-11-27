@@ -132,7 +132,6 @@ for filterType in flat_filters:
     masterFilebrds = master_flat_name +'_' + filterType + bias_removal_suffix + dark_subtract_suffix + '.fit'
     col.removeDark(master_dir,master_dir,master_dir,master_dark_name + bias_removal_suffix +'.fit',masterFilebr,masterFilebrds)
 
-
 print('Reduce Science File')
 
 print('Remove Bias & Dark')
@@ -142,18 +141,15 @@ for fname in science_ic.files:
     col.removeBias(master_dir,science_dir,output_dir,master_bias_name+'.fit',fname,fname_noext + bias_removal_suffix +'.fit')
     col.removeDark(master_dir,output_dir,output_dir,master_dark_name+ bias_removal_suffix +'.fit',fname_noext + bias_removal_suffix+'.fit',fname_noext + bias_removal_suffix+dark_subtract_suffix +'.fit')
 
-
 print('Flat Correction')
+for filterType in flat_filters:
+    print(repr(filterType))
+    for fname in science_ic.files_filtered(filter=filterType):
+        fname_noext = os.path.splitext(fname)[0]
+        print(repr(fname_noext))
+        col.reduceFlat(master_dir,output_dir,output_dir,master_flat_name+'_'+filterType+ bias_removal_suffix + dark_subtract_suffix+'.fit',fname_noext+bias_removal_suffix + dark_subtract_suffix +'.fit',fname_noext+'_red.fit')
 
-master_file = os.path.join(output_dir,'science1'+ bias_removal_suffix + dark_subtract_suffix +'.fit')
-ccd = CCDData.read(master_file, unit = u.adu)
-flat_file = os.path.join(master_dir, 'master_flat_B'+ bias_removal_suffix + dark_subtract_suffix +'.fit')
-master = CCDData.read(flat_file, unit = u.adu)
-master_red = ccdproc.flat_correct(ccd=ccd, flat=master)
-    
-mbrds_file = os.path.join(output_dir,'science1_red.fit')
 
-master_red.write(mbrds_file, overwrite=True)
 
 
 

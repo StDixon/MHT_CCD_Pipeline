@@ -95,4 +95,15 @@ def removeDark(Dark_Directory,Master_Directory,Dest_Directory, DarkFilename, Sou
     mbrds_file = os.path.join(Dest_Directory,DestFilename)
 
     master_brds.write(mbrds_file, overwrite=True)
+
+def reduceFlat(Flat_Directory, Source_Directory, Destination_Directory, FlatFilename,SourceFilename, DestFilename):
+    master_file = os.path.join(Source_Directory,SourceFilename)
+    ccd = CCDData.read(master_file, unit = u.adu)
+    flat_file = os.path.join(Flat_Directory, FlatFilename)
+    master = CCDData.read(flat_file, unit = u.adu)
+    master_red = ccdproc.flat_correct(ccd=ccd, flat=master)
+    
+    mbrds_file = os.path.join(Destination_Directory,DestFilename)
+
+    master_red.write(mbrds_file, overwrite=True)
     
