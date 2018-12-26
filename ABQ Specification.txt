@@ -1,0 +1,95 @@
+
+======================================
+ ABQ Data Entry Program Specification
+======================================
+
+Description
+-----------
+
+The program is being created to minimize data entry errors
+for laboratory measurements.
+
+Functionality Required
+----------------------
+
+The program must:
+
+* all all relevant, valid data to be entered, as per the field chart.
+* append entered data to a CSV file.
+ - The CSV file must hace a filename of
+   abq_data_record_CURRENTDATE.csv, where CURRENTDATE is
+   the date of the checks in ISO format (Year-month-day).
+ - The CSV file must have all the fields as per the chart.
+* enforce correct datatypes per field.
+* have inputs that:
+ - ignore meaningless keystrokes.
+ - require a value for all fields, except Notes.
+ - get marked with an error if the value is invalid on focusout.
+* prevent saving the record when errors are present.
+
+The program should try, whenever possible, to:
+
+* enforce reasonable limits on data entered.
+* Auto-fill data.
+* Suggest likely correct values.
+* provide smooth and efficient workflow.
+
+Functionality Not Required
+--------------------------
+
+The program does not need to:
+
+* Allow editing of data. This can be done in LibreOffice if necessary.
+* Allow deletion of data.
+
+Limitations
+-----------
+
+The program must:
+
+* Be efficiently operable by keyboard-only users.
+* Be accessible to colour blind users.
+* Run on Debian Linux.
+* run acceptable on a low-end PC.
+
+Data Dictionary
+---------------
+
++-------------+---------+-----+---------------+---------------------+
+|Field        |Datatype |Units|Range          |Description          |
++=============+=========+=====+===============+=====================+
+|Date         |Date     |     |               |Date of Record       |
++-------------+---------+-----+---------------+---------------------+
+|Time         |Time     |     |8 , 12, 16, 20 |Time Period          |
++-------------+---------+-----+---------------+---------------------+
+|Lab          |Sting    |     |A - E          |Lab ID               |
++-------------+---------+-----+---------------+---------------------+
+|Technician   |String   |     |               |Technician Name      |
++-------------+---------+-----+---------------+---------------------+
+|Plot         |Int      |     |1 - 20         |Plot ID              |
++-------------+---------+-----+---------------+---------------------+
+|Seed         |String   |     |               |Seed Sample ID       |
++-------------+---------+-----+---------------+---------------------+
+|Fault        |Bool     |     |               |Fault on Sensor      |
++-------------+---------+-----+---------------+---------------------+
+|Light        |Decimal  |klx  |0 - 100        |Light at Plot        |
++-------------+---------+-----+---------------+---------------------+
+|Humidity     |Decimal  |g/m3 |0.5 - 52.0     |Abs Humidity at Plot |
++-------------+---------+-----+---------------+---------------------+
+|Temperature  |Decimal  |°C   |4 - 40         |Temperature at Plot  |
++-------------+---------+-----+---------------+---------------------+
+|Blossoms     |Int      |     |0 - 1000       |#Blossoms in Plot    |
++-------------+---------+-----+---------------+---------------------+
+|Fruit        |Int      |     |0 - 1000       |#Fruits in Plot      |
++-------------+---------+-----+---------------+---------------------+
+|Plants       |Int      |     |0 - 20         |#Plants in Plot      |
++-------------+---------+-----+---------------+---------------------+
+|Max Height   |Decimal  |cm   |0 - 1000       |Ht of Tallest Plant  |
++-------------+---------+-----+---------------+---------------------+
+|Min Height   |Decimal  |cm   |0 - 1000       |Ht of Shortest Plant |
++-------------+---------+-----+---------------+---------------------+
+|Median Height|Decimal  |cm   |0 - 1000       |Median Ht of Plants  |
++-------------+---------+-----+---------------+---------------------+
+|Notes        |String   |     |               |Miscellaneous Notes  |
++-------------+---------+-----+---------------+---------------------+
+
