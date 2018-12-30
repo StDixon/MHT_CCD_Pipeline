@@ -51,6 +51,54 @@ class GenericMainMenu(tk.Menu):
         )
         self.add_cascade(label='Go',menu=go_menu)
 
+        # Preferences menu
+        pref_menu = tk.Menu(self,tearoff=False)
+
+        # Settings sub menu
+        settings_menu = tk.Menu(self,tearoff=False)
+
+        # Font sub-sub menu
+        font_size_menu = tk.Menu(self,tearoff=False)
+        for size in range(6,17,1):
+            font_size_menu.add_radiobutton(
+                label=size,
+                value=size,
+                variable=self.settings['font size']
+            )
+        settings_menu.add_cascade(label='Font size',menu=font_size_menu)
+
+        # Theme sub-sub menu
+        style = ttk.Style()
+        themes_menu = tk.Menu(self,tearoff=False)
+        for theme in style.theme_names():
+            themes_menu.add_radiobutton(
+                label=theme,
+                value=theme,
+                variable=self.settings['theme']
+            )
+        settings_menu.add_cascade(label='Theme',menu=themes_menu)
+
+        self.settings['theme'].trace('w',self.on_theme_change)
+
+        pref_menu.add_cascade(label='Settings',menu=settings_menu)
+
+        # Config sub menu
+        config_menu = tk.Menu(self,tearoff=False)
+
+        # File Location sub-sub menu
+        file_loc_menu = tk.Menu(self,tearoff=False)
+
+        config_menu.add_cascade(label='File locations',menu=file_loc_menu)
+
+        # Master names sub-sub menu
+        master_names_menu = tk.Menu(self,tearoff=False)
+
+        config_menu.add_cascade(label='Master names',menu=master_names_menu)
+
+        pref_menu.add_cascade(label='Configuration',menu=config_menu)
+
+        self.add_cascade(label='Preferences',menu=pref_menu)
+
         # Help menu
         help_menu = tk.Menu(self,tearoff=False)
 
@@ -77,6 +125,17 @@ class GenericMainMenu(tk.Menu):
                 key,
                 partial(self._argstrip,command)
             )
+
+    def on_theme_change(self,*args):
+        """Popup a message about theme changes"""
+        message = "Change requires restart"
+        detail = (
+            "Theme changes do not take effect"
+            " until application restart")
+        messagebox.showwarning(
+            title='Warning',
+            message=message,
+            detail=detail)
 
     def show_about(self):
         """Show the about dialog"""

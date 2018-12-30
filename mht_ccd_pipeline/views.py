@@ -1,6 +1,12 @@
 import tkinter as tk
 from tkinter import ttk
 
+import matplotlib.pyplot as plt
+from astropy.visualization import astropy_mpl_style
+
+from astropy.utils.data import get_pkg_data_filename
+from astropy.io import fits
+
 from . import widgets as w
 
 class ShowHeaderForm(tk.Frame):
@@ -72,11 +78,32 @@ class ShowHeaderForm(tk.Frame):
         self.inputs['Header'] = w.LabelInput(
             self, "Header",
             field_spec=fields['Header'],
-            input_args={"width": 85, "height": 10}
+            input_args={"width": 80, "height": 50}
         )
+        self.inputs['Header'].input.config(state='disabled')
         self.inputs['Header'].grid(sticky="w", row=0, column=2, padx=10, pady=10)
 
         headerinfo.grid(row=0,column=0,sticky="we")
+
+        # image section
+        imageinfo = tk.LabelFrame(
+            self,
+            text="Image Information",
+            bg="lightblue",
+            padx=10,
+            pady=10
+        )
+
+        # Image display
+        self.inputs['Image'] = w.LabelInput(
+            self, "Image",
+            field_spec=fields['Image'],
+            input_args={"width": 80, "height": 50}
+        )
+        self.inputs['Image'].input.config(state='disabled')
+        self.inputs['Image'].grid(sticky="w", row=0, column=3, padx=10, pady=10)
+
+        imageinfo.grid(row=0,column=0,sticky="we")
 
     def populate_header(self,rows):
         """Clear the treeview and write the supplied data rows to it."""
@@ -97,9 +124,24 @@ class ShowHeaderForm(tk.Frame):
         selected_id = self.treeview.selection()[0]
         self.callbacks['on_open_file_header'](selected_id)
 
-    def load_header(self,*args):
+    def load_header(self,header,*args):
 
-        pass
+        self.inputs['Header'].input.config(state='normal')
+        self.inputs['Header'].set(header)
+        self.inputs['Header'].input.config(state='disabled')
+
+    def load_image(self,image,*args):
+
+        self.inputs['Image'].input.config(state='normal')
+        self.inputs['Image'].set(image)
+        self.inputs['Image'].input.config(state='disabled')
+
+        plt.style.use(astropy_mpl_style)
+        print(image.shape)
+        plt.figure()
+        plt.imshow(image,cmap='gray')
+        plt.colorbar
+
 
     def sort(self,treeview,col):
         itemlist = list(treeview.get_children(''))
