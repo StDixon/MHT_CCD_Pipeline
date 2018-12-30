@@ -103,7 +103,8 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# App Specific
 
 samples/
-
 working/
+old_stuff/
