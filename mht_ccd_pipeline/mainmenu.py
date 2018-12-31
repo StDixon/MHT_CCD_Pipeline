@@ -45,6 +45,10 @@ class GenericMainMenu(tk.Menu):
             label='Show Image File',
             command=self.callbacks['go->imagefile']
         )
+        go_menu.add_command(
+            label='CCD Reduction',
+            command=self.callbacks['go->ccdreduction']
+        )
 
         self.add_cascade(label='Go',menu=go_menu)
 

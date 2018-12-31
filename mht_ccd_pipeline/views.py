@@ -57,7 +57,7 @@ class ShowImageFileForm(tk.Frame):
         )
         self.treeview.configure(yscrollcommand=self.scrollbar.set)
         self.treeview.configure(show='headings')
-        self.treeview.grid(row=0,column=0,sticky='NSEW')
+        self.treeview.grid(row=0,column=0,sticky='NSEW',padx=10, pady=10)
         self.scrollbar.grid(row=0,column=1,sticky='NSW')
 
         # Configure treeview columns
@@ -143,13 +143,92 @@ class ShowImageFileForm(tk.Frame):
         #self.inputs['Image'].input.config(state='normal')
         #self.inputs['Image'].set(hold)
         #self.inputs['Image'].input.config(state='disabled')
-        
+ 
+    def sort(self,treeview,col):
+        itemlist = list(treeview.get_children(''))
+        itemlist.sort(key=lambda x:treeview.set(x,col))
+        for index, iid in enumerate(itemlist):
+            treeview.move(iid,treeview.parent(iid),index)
 
+class CCDReductionForm(tk.Frame):
+    """CCD Reduction"""
+    
+    default_width = 100
+    default_minwidth = 10
+    default_anchor = tk.CENTER
 
+    def __init__(self,parent,settings,callbacks,*args,**kwargs):
+        super().__init__(parent,*args,**kwargs)
+
+        self.column_defs = {
+            '#0':{'label':'ID','width':50,'stretch':True,'anchor':tk.W,'command':lambda: self.sort(self.treeview,'#0')},
+            'Filename':{'label':'Filename','width':150,'stretch':True,'anchor':tk.W,'command':lambda: self.sort(self.treeview,'Filename')}
+           }
+
+        self.settings = settings
+        self.callbacks = callbacks
+
+        # main section
+        mainframe = tk.LabelFrame(
+            self,
+            text="File Information",
+            bg="khaki",
+            padx=10,
+            pady=10
+        )
+
+        # collection treeview
+        self.treeview = ttk.Treeview(
+            self,
+            columns=list(self.column_defs.keys())[1:],
+            selectmode='none'
+        )
+
+        # scrollbar for treeview
+        self.scrollbar = ttk.Scrollbar(
+            self,
+            orient=tk.VERTICAL,
+            command=self.treeview.yview
+        )
+        self.treeview.configure(yscrollcommand=self.scrollbar.set)
+        self.treeview.configure(show='headings')
+        self.treeview.grid(row=0,column=0,sticky='NSEW',padx=10,pady=10)
+        self.scrollbar.grid(row=0,column=1,sticky='NSW')
+
+        # Configure treeview columns
+        for name, definition in self.column_defs.items():
+            label = definition.get('label','')
+            anchor = definition.get('anchor',self.default_anchor)
+            minwidth = definition.get('minwidth',self.default_minwidth)
+            width = definition.get('width',self.default_width)
+            stretch = definition.get('stretch',False)
+            command = definition.get('command','')
+
+            self.treeview.heading(name,text=label,anchor=anchor,command=command)
+            self.treeview.column(name,anchor=anchor,minwidth=minwidth,
+                                 width=width, stretch=stretch)
+
+        mainframe.grid(row=0,column=0,sticky="we")
+
+    def populate_files(self,rows):
+        """Clear the treeview and write the supplied data rows to it."""
+
+        for row in self.treeview.get_children():
+            self.treeview.delete(row)
+
+        valuekeys = list(self.column_defs.keys())[1:]
+        for rownum, rowdata in enumerate(rows):
+            values = [rowdata[key] for key in valuekeys]
+            parent = rowdata['Parent']
+            iid = rowdata['Path']
+            self.treeview.insert(parent,'end',iid=iid,
+            text=str(rownum),values=values)
 
     def sort(self,treeview,col):
         itemlist = list(treeview.get_children(''))
         itemlist.sort(key=lambda x:treeview.set(x,col))
         for index, iid in enumerate(itemlist):
             treeview.move(iid,treeview.parent(iid),index)
+
+
 

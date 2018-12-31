@@ -59,6 +59,7 @@ class Application(tk.Tk):
             'file->select':self.on_file_select,
             'file->quit':self.quit,
             'go->imagefile':self.show_imagefile,
+            'go->ccdreduction':self.show_ccdreduction,
             'on_open_image_file':self.open_image_file,
         }
 
@@ -77,6 +78,15 @@ class Application(tk.Tk):
         self.imagefileform.grid(row=0,padx=10,sticky='NSEW')
         self.populate_imagefileform()
 
+        # CCD reduction form
+        self.ccdreductionform = v.CCDReductionForm(
+            self,
+            self.settings,
+            self.callbacks
+        )
+        self.imagefileform.grid(row=0,padx=10,sticky='NSEW')
+        self.populate_imagefileform()
+
     def on_file_select(self):
         """Handle the file->select action from the menu"""
         pass
@@ -85,6 +95,13 @@ class Application(tk.Tk):
         """Handle the go->imagefile action from the menu"""
         self.populate_imagefileform()
         self.imagefileform.tkraise()
+
+    def show_ccdreduction(self):
+        """Handle the go->ccdreduction action from the menu"""
+        self.create_collections()
+
+        self.populate_ccdreductionform()
+        self.ccdreductionform.tkraise()
 
     def open_image_file(self,filename=None):
         if filename is None:
@@ -124,6 +141,26 @@ class Application(tk.Tk):
 
         self.imagefileform.populate_files(rows)
 
+    def populate_ccdreductionform(self):
+        
+        working_path = '.'
+        image_path = 'samples'
+        default_path = os.path.join(working_path,image_path)
+        files = Path(default_path).glob('*.fits')
+
+        rows = []
+
+        for file in files:
+            path = str(file)
+            filename = str(file.name)
+            parent = str(file.parent)
+            if parent == '.' or parent == image_path:
+                parent = ''
+            row = {'Filename':filename,'Parent':parent,'Path':path}
+            rows.append(row)
+
+        self.ccdreductionform.populate_files(rows)
+
     def save_settings(self,*args):
         """Save the current settings to a preferences file"""
 
@@ -150,6 +187,30 @@ class Application(tk.Tk):
         # put a trace on the variables so they get stored when changed.
         for var in self.settings.values():
             var.trace('w', self.save_settings)
+
+    def create_collections(self):
+        #create all collections
+
+        filemods = {}        
+        filemods['bias_removal_suffix'] = '_br'
+        filemods['dark_subtract_suffix'] = '_ds'
+        filemods['master_bias_name'] = 'master_bias'
+        filemods['master_dark_name'] = 'master_dark'
+        filemods['master_flat_name'] = 'master_flat'
+
+        paths = {}
+        paths['source_dir'] = 'samples'
+        paths['bias_dir'] = 'working/calibration/bias'
+        paths['dark_dir'] = 'working/calibration/dark'
+        paths['flat_dir'] = 'working/calibration/flat'
+        paths['master_dir'] = 'working/calibration/masters'
+        paths['science_dir'] = 'working/science'
+        paths['output_dir'] = 'working/output'
+
+        #keywords = ("IMAGETYP", "FILTER", "OBJECT", "EXPOSURE", "EXPTIME", "CCDTEMP")
+        keywords = ("IMAGETYP", "FILTER", "OBJECT", "EXPTIME", "CCDTEMP")
+        
+        self.collection = m.ImageCollection(keywords,paths,filemods)
 
     def set_font(self,*args):
         font_size = self.settings['font size'].get()
