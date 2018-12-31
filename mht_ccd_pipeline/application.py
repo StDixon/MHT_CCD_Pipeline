@@ -36,11 +36,11 @@ class Application(tk.Tk):
         self.logo = tk.PhotoImage(file=MHT_LOGO_32)
         tk.Label(self,image=self.logo).grid(row=0)
 
-        # header model
+        # File image model
         datestring = datetime.today().strftime("%Y-%m-%d")
         default_filename = "mht_data_record_{}.csv".format(datestring)
         self.filename = tk.StringVar(value=default_filename)
-        self.header_model = m.HeaderModel(filename=self.filename.get())
+        self.imagefile_model = m.ImageFile_Model(filename=self.filename.get())
 
         # settings model & settings
         config_dir = self.config_dirs.get(platform.system(), '~')
@@ -58,9 +58,8 @@ class Application(tk.Tk):
         self.callbacks = {
             'file->select':self.on_file_select,
             'file->quit':self.quit,
-            'go->headers':self.show_headers,
-            'go->images':self.show_images,
-            'on_open_file_header':self.open_file_header,
+            'go->imagefile':self.show_imagefile,
+            'on_open_image_file':self.open_image_file,
         }
 
         # Menu
@@ -68,43 +67,31 @@ class Application(tk.Tk):
         menu = menu_class(self,self.settings,self.callbacks)
         self.config(menu=menu)
 
-        # Header view form
-        self.headerform = v.ShowHeaderForm(
+        # Image file view form
+        self.imagefileform = v.ShowImageFileForm(
             self,
-            m.HeaderModel.fields,
+            m.ImageFile_Model.fields,
             self.settings,
             self.callbacks
         )
-        self.headerform.grid(row=0,padx=10,sticky='NSEW')
-        #self.populate_headerform()
-
-        # Image view form
-        self.imageform = v.ShowImageForm(
-            self,
-            self.settings,
-            self.callbacks
-        )
-        self.imageform.grid(row=0,padx=10,sticky='NSEW')
+        self.imagefileform.grid(row=0,padx=10,sticky='NSEW')
+        self.populate_imagefileform()
 
     def on_file_select(self):
         """Handle the file->select action from the menu"""
         pass
 
-    def show_headers(self):
-        """Handle the go->headers action from the menu"""
-        self.populate_headerform()
-        self.headerform.tkraise()
+    def show_imagefile(self):
+        """Handle the go->imagefile action from the menu"""
+        self.populate_imagefileform()
+        self.imagefileform.tkraise()
 
-    def show_images(self):
-        """Handle the go->images action from the menu"""
-        self.imageform.tkraise()
-
-    def open_file_header(self,filename=None):
+    def open_image_file(self,filename=None):
         if filename is None:
             header = None
         else:
             try:
-                header = self.header_model.get_header(filename)
+                header = self.imagefile_model.get_fileheader(filename)
             except Exception as e:
                 messagebox.showerror(
                     title='Error',
@@ -112,28 +99,12 @@ class Application(tk.Tk):
                     detail=str(e)
                 )
                 return
-        self.headerform.load_header(header)
-        self.headerform.tkraise()
+        self.imagefileform.load_header(header)
+        self.imagefileform.tkraise()
 
-        self.open_file_image(filename)
+        #self.open_file_image(filename)
 
-    def open_file_image(self,filename=None):
-        if filename is None:
-            image = None
-        else:
-            try:
-                image = self.header_model.get_image(filename)
-            except Exception as e:
-                messagebox.showerror(
-                    title='Error',
-                    message='Problem reading file',
-                    detail=str(e)
-                )
-                return
-        self.headerform.load_image(image)
-        self.headerform.tkraise()
-
-    def populate_headerform(self):
+    def populate_imagefileform(self):
         
         working_path = '.'
         image_path = 'samples'
@@ -151,7 +122,7 @@ class Application(tk.Tk):
             row = {'Filename':filename,'Parent':parent,'Path':path}
             rows.append(row)
 
-        self.headerform.populate_header(rows)
+        self.imagefileform.populate_files(rows)
 
     def save_settings(self,*args):
         """Save the current settings to a preferences file"""

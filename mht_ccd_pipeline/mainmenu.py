@@ -42,13 +42,10 @@ class GenericMainMenu(tk.Menu):
         go_menu = tk.Menu(self,tearoff=False)
 
         go_menu.add_command(
-            label='Show Headers',
-            command=self.callbacks['go->headers']
+            label='Show Image File',
+            command=self.callbacks['go->imagefile']
         )
-        go_menu.add_command(
-            label='Show Images',
-            command=self.callbacks['go->images']
-        )
+
         self.add_cascade(label='Go',menu=go_menu)
 
         # Preferences menu

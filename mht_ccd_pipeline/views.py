@@ -7,10 +7,12 @@ from astropy.visualization import astropy_mpl_style
 from astropy.utils.data import get_pkg_data_filename
 from astropy.io import fits
 
+from PIL import ImageTk as itk
+
 from . import widgets as w
 
-class ShowHeaderForm(tk.Frame):
-    """Display FIT file headers"""
+class ShowImageFileForm(tk.Frame):
+    """Display FIT file data"""
     
     default_width = 100
     default_minwidth = 10
@@ -72,7 +74,7 @@ class ShowHeaderForm(tk.Frame):
                                  width=width, stretch=stretch)
 
         # Bind double-clicks
-        self.treeview.bind('<<TreeviewOpen>>',self.on_open_file_header)
+        self.treeview.bind('<<TreeviewOpen>>',self.on_open_image_file)
 
         # header display
         self.inputs['Header'] = w.LabelInput(
@@ -83,29 +85,20 @@ class ShowHeaderForm(tk.Frame):
         self.inputs['Header'].input.config(state='disabled')
         self.inputs['Header'].grid(sticky="w", row=0, column=2, padx=10, pady=10)
 
+        # Image display
+        self.canvas = tk.Canvas(
+            self, width=800,height=500
+            #"Image",
+            #field_spec=fields['Image'],
+            #input_args={"width": 80, "height": 50}
+        )
+        #self.inputs['Image'].input.config(state='disabled')
+        #self.canvas.create_rectangle(0,0,600,400,fill='blue')
+        self.canvas.grid(sticky="w", row=0, column=3, padx=10, pady=10)
+
         headerinfo.grid(row=0,column=0,sticky="we")
 
-        # image section
-        imageinfo = tk.LabelFrame(
-            self,
-            text="Image Information",
-            bg="lightblue",
-            padx=10,
-            pady=10
-        )
-
-        # Image display
-        self.inputs['Image'] = w.LabelInput(
-            self, "Image",
-            field_spec=fields['Image'],
-            input_args={"width": 80, "height": 50}
-        )
-        self.inputs['Image'].input.config(state='disabled')
-        self.inputs['Image'].grid(sticky="w", row=0, column=3, padx=10, pady=10)
-
-        imageinfo.grid(row=0,column=0,sticky="we")
-
-    def populate_header(self,rows):
+    def populate_files(self,rows):
         """Clear the treeview and write the supplied data rows to it."""
 
         for row in self.treeview.get_children():
@@ -119,10 +112,10 @@ class ShowHeaderForm(tk.Frame):
             self.treeview.insert(parent,'end',iid=iid,
             text=str(rownum),values=values)
 
-    def on_open_file_header(self,*args):
+    def on_open_image_file(self,*args):
 
         selected_id = self.treeview.selection()[0]
-        self.callbacks['on_open_file_header'](selected_id)
+        self.callbacks['on_open_image_file'](selected_id)
 
     def load_header(self,header,*args):
 
@@ -132,15 +125,26 @@ class ShowHeaderForm(tk.Frame):
 
     def load_image(self,image,*args):
 
-        self.inputs['Image'].input.config(state='normal')
-        self.inputs['Image'].set(image)
-        self.inputs['Image'].input.config(state='disabled')
-
         plt.style.use(astropy_mpl_style)
-        print(image.shape)
-        plt.figure()
-        plt.imshow(image,cmap='gray')
         plt.colorbar
+
+        print(image.shape)
+        print(repr(image))       
+        
+        pic = plt.imshow(image,cmap='gray')
+        photo = tk.PhotoImage(master=self.canvas)
+        print(repr(photo))
+        self.canvas.photolist = []
+
+        self.canvas.create_image(0,0,image=photo)
+        self.canvas.photolist.append(photo)
+        
+        
+        #self.inputs['Image'].input.config(state='normal')
+        #self.inputs['Image'].set(hold)
+        #self.inputs['Image'].input.config(state='disabled')
+        
+
 
 
     def sort(self,treeview,col):
@@ -149,28 +153,3 @@ class ShowHeaderForm(tk.Frame):
         for index, iid in enumerate(itemlist):
             treeview.move(iid,treeview.parent(iid),index)
 
-class ShowImageForm(tk.Frame):
-    """Display FIT file images"""
-
-    def __init__(self,parent,settings,callbacks,*args,**kwargs):
-        super().__init__(parent,*args,**kwargs)
-
-        self.settings = settings
-        self.callbacks = callbacks
-
-        # Build the form
-
-        # image section
-        imageinfo = tk.LabelFrame(
-            self,
-            text="Image Information",
-            bg="khaki",
-            padx=10,
-            pady=10
-        )
-
-        # file selection
-
-        # image display
-
-        imageinfo.grid(row=0,column=0,sticky="we")

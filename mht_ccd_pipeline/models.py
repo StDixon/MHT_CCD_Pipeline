@@ -7,8 +7,8 @@ from astropy import units as u
 
 from .constants import FieldTypes as FT
 
-class HeaderModel:
-    """ FITS file required header details"""
+class ImageFile_Model:
+    """ FITS file required file details"""
 
     fields = {
         "Filename":{'req':True,'type':FT.string},
@@ -22,15 +22,16 @@ class HeaderModel:
     def __init__(self,filename):
         self.filename = filename
 
-    def get_header(self,filename):
+    def get_fileheader(self,filename):
         """ Read FITS header from file """
         if not os.path.exists(filename):
             return []
         ccd = CCDData.read(filename,unit=u.adu)
         self.fields['Header'] = ccd.header
+        
         return self.fields['Header']
 
-    def get_image(self,filename):
+    def get_fileimage(self,filename):
         """ Read FITS image from file """
         if not os.path.exists(filename):
             return []
