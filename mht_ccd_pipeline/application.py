@@ -212,6 +212,13 @@ class Application(tk.Tk):
         
         self.collection = m.ImageCollection(keywords,paths,filemods)
 
+        directorylist = (paths['bias_dir'],paths['dark_dir'],paths['flat_dir'],paths['science_dir'],paths['master_dir'],paths['output_dir'])
+
+        m.ImageCollection.performreduction(self.collection,self.settings,directorylist)
+
+
+
+
     def set_font(self,*args):
         font_size = self.settings['font size'].get()
         font_names = ('TkDefaultFont','TkMenuFont','TkTextFont','TkHeadingFont')
