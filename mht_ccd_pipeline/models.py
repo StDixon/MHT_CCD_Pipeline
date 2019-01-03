@@ -8,6 +8,8 @@ from astropy.io import fits
 from astropy import units as u
 import numpy as np
 
+import configparser
+
 from .constants import FieldTypes as FT
 
 class ImageFile_Model:
@@ -42,12 +44,13 @@ class ImageFile_Model:
         self.fields['Image'] = ccd.data
         return self.fields['Image']
 
-class SettingsModel:
+class Settings_Model:
     """A model for saving settings"""
 
     variables = {
         'font size': {'type':'int','value':9},
-        'theme': {'type':'str','value':'default'}
+        'theme': {'type':'str','value':'default'},
+        'last config': {'type':'str','value':''}
     }
 
     def __init__(self,filename='mht_settings.json',path='~'):
@@ -90,7 +93,101 @@ class SettingsModel:
                 raw_value = raw_values[key]['value']
                 self.variables[key]['value'] = raw_value
 
-class ImageCollection():
+class Configuration_Model:
+    """A model for saving application configuration settings"""
+
+    Directories = {
+        'source_dir': {'type':'str','value':'source'},
+        'working_dir': {'type':'str','value':'working'},
+        'calibration_dir': {'type':'str','value':'calibration'},
+        'bias_dir': {'type':'str','value':'bias'},
+        'dark_dir': {'type':'str','value':'dark'},
+        'flat_dir': {'type':'str','value':'flat'},
+        'master_dir': {'type':'str','value':'master'},
+        'science_dir': {'type':'str','value':'science'},
+        'output_dir': {'type':'str','value':'output'}
+    }
+
+    FileModifiers = {
+        'bias_removal': {'type':'str','value':'br'},
+        'dark_subtract': {'type':'str','value':'ds'},
+        'reduced': {'type':'str','value':'red'},
+        'prefix_suffix_mod': {'type':'str','value':'_'},
+        'bias_removal_prefix': {'type':'bool','value':'False'},
+        'dark_subtract_prefix': {'type':'bool','value':'False'},
+        'reduced_prefix': {'type':'bool','value':'False'}
+    }
+
+    #FileModifiers = {
+    #    'bias_removal': {'type':'str','value':'br'},
+    #    'dark_subtract': {'type':'str','value':'ds'},
+    #    'reduced': {'type':'str','value':'red'},
+    #    'prefix_suffix_mod': {'type':'str','value':'_'},
+    #    'reduced_prefix': {'type':'bool','value':'False'},
+    #    'prefix_suffix_mod': {'type':'bool','value':'False'}
+    #}
+
+    MasterNames = {
+        'master_bias_name': {'type':'str','value':'master_bias'},
+        'master_dark_name': {'type':'str','value':'master_dark'},
+        'master_flat_name': {'type':'str','value':'master_flat'},
+    }
+
+    def __init__(self,filename=None,path=None):
+        #load in last saved config file values
+        self.load(filename)
+
+    def load(self,filename):
+        """Load the configuration from the file"""
+        
+        filename = 'config.ini'
+
+        # if the file doesn't exist, return
+        if not os.path.exists(filename):
+            return
+
+        # Load the configuration file
+        config = configparser.ConfigParser()
+        config.read(filename)
+
+        # List all contents
+        print("List all contents")
+        for section in config.sections():
+            print("Section: %s" % section)
+            for options in config.options(section):
+                print("x %s:::%s:::%s" % (options,
+                                    config.get(section, options),
+                                    str(type(options))))
+
+        self.save()
+
+    def save(self):
+        """Save the configuration to file"""
+      
+        config = configparser.ConfigParser()
+
+        config['Directories']={}
+        for option in self.Directories:
+            config['Directories'][option]=str(self.Directories[option]['value'])
+
+        config['FileModifiers']={}
+        for option in self.FileModifiers:
+            config['FileModifiers'][option]=str(self.FileModifiers[option]['value'])
+
+        config['MasterNames']={}
+        for option in self.MasterNames:
+            config['MasterNames'][option]=str(self.MasterNames[option]['value'])
+
+        with open('example.ini', 'w') as configfile:
+            config.write(configfile)
+ 
+
+    def saveas(self):
+        """Save the configuration to a new file"""
+        pass
+        
+
+class ImageCollection_Model():
     """Image collection model"""
 
     def __init__(self,keywords,paths,filemods):

@@ -6,11 +6,13 @@ Created on Sun Dec 16 12:35:23 2018
 @author: sdixon
 """
 
-from tkinter import *
+import tkinter as tk
 from tkinter import ttk
 
 import configparser
 import io
+
+from astropy.units import *
 
 def newFile():
     
@@ -89,10 +91,10 @@ def _init_menu_help(bar,menu):
     menu.add_command(label='About..', command=aboutProg, underline=0, accelerator='Control-A')
     
 def _init_menu():
-    menubar = Menu(win)
-    menu_file = Menu(menubar)
-    menu_edit = Menu(menubar)
-    menu_help = Menu(menubar)
+    menubar = tk.Menu(win)
+    menu_file = tk.Menu(menubar)
+    menu_edit = tk.Menu(menubar)
+    menu_help = tk.Menu(menubar)
 
     _init_menu_file(menubar,menu_file)
     _init_menu_edit(menubar,menu_edit)
@@ -100,12 +102,12 @@ def _init_menu():
 
     win['menu'] = menubar    
     
-root=Tk()
-root.option_add('*tearOff',FALSE)
+root=tk.Tk()
+root.option_add('*tearOff',False)
 
 root.withdraw()
 
-win = Toplevel(root)
+win = tk.Toplevel(root)
 win.protocol("WM_DELETE_WINDOW", root.destroy)
 win.title(' MHT CCD Pipeline ')
 win.geometry('300x200-5+40')

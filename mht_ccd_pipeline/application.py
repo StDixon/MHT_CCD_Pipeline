@@ -43,8 +43,8 @@ class Application(tk.Tk):
         self.imagefile_model = m.ImageFile_Model(filename=self.filename.get())
 
         # settings model & settings
-        config_dir = self.config_dirs.get(platform.system(), '~')
-        self.settings_model = m.SettingsModel(path=config_dir)
+        settings_dir = self.config_dirs.get(platform.system(), '~')
+        self.settings_model = m.Settings_Model(path=settings_dir)
         self.load_settings()
         self.set_font()
         self.settings['font size'].trace('w', self.set_font)
@@ -53,6 +53,12 @@ class Application(tk.Tk):
         theme = self.settings.get('theme').get()
         if theme in style.theme_names():
             style.theme_use(theme)
+
+        # configuration model & settings
+        config_file = 'config.ini'
+        self.config_model = m.Configuration_Model()
+        self.load_config()
+
         
         # callbacks
         self.callbacks = {
@@ -188,6 +194,37 @@ class Application(tk.Tk):
         for var in self.settings.values():
             var.trace('w', self.save_settings)
 
+    def load_config(self):
+        """Load configuration"""
+
+        vartypes = {
+            'bool':tk.BooleanVar,
+            'str':tk.StringVar,
+            'int':tk.IntVar,
+            'float':tk.DoubleVar
+        }
+
+        self.configuration = {}
+
+        # create dict of configuration variables from the model's settings.
+        self.configuration['Directories'] = {}
+        for key, data in self.config_model.Directories.items():
+            vartype = vartypes.get(data['type'], tk.StringVar)
+            self.configuration['Directories'][key] = vartype(value=data['value'])
+
+        self.configuration['FileModifiers'] = {}
+        for key, data in self.config_model.FileModifiers.items():
+            vartype = vartypes.get(data['type'], tk.StringVar)
+            self.configuration['FileModifiers'][key] = vartype(value=data['value'])
+
+        self.configuration['MasterNames'] = {}
+        for key, data in self.config_model.MasterNames.items():
+            vartype = vartypes.get(data['type'], tk.StringVar)
+            self.configuration['MasterNames'][key] = vartype(value=data['value'])
+
+        print(repr(self.configuration))
+        
+
     def create_collections(self):
         #create all collections
 
@@ -210,7 +247,7 @@ class Application(tk.Tk):
         #keywords = ("IMAGETYP", "FILTER", "OBJECT", "EXPOSURE", "EXPTIME", "CCDTEMP")
         keywords = ("IMAGETYP", "FILTER", "OBJECT", "EXPTIME", "CCDTEMP")
         
-        self.collection = m.ImageCollection(keywords,paths,filemods)
+        self.collection = m.ImageCollection_Model(keywords,paths,filemods)
 
         directorylist = (paths['bias_dir'],paths['dark_dir'],paths['flat_dir'],paths['science_dir'],paths['master_dir'],paths['output_dir'])
 
