@@ -8,6 +8,8 @@ from astropy.io import fits
 from astropy import units as u
 import numpy as np
 
+from configobj import ConfigObj
+
 import configparser
 
 from .constants import FieldTypes as FT
@@ -118,20 +120,13 @@ class Configuration_Model:
         'reduced_prefix': {'type':'bool','value':'False'}
     }
 
-    #FileModifiers = {
-    #    'bias_removal': {'type':'str','value':'br'},
-    #    'dark_subtract': {'type':'str','value':'ds'},
-    #    'reduced': {'type':'str','value':'red'},
-    #    'prefix_suffix_mod': {'type':'str','value':'_'},
-    #    'reduced_prefix': {'type':'bool','value':'False'},
-    #    'prefix_suffix_mod': {'type':'bool','value':'False'}
-    #}
-
     MasterNames = {
         'master_bias_name': {'type':'str','value':'master_bias'},
         'master_dark_name': {'type':'str','value':'master_dark'},
         'master_flat_name': {'type':'str','value':'master_flat'},
     }
+
+    Test = {'Directories':Directories,'FileModifiers':FileModifiers,'MasterNames':MasterNames}
 
     def __init__(self,filename=None,path=None):
         #load in last saved config file values
@@ -149,6 +144,14 @@ class Configuration_Model:
         # Load the configuration file
         config = configparser.ConfigParser()
         config.read(filename)
+
+        config2 = ConfigObj('example.ini')
+        
+        print('From Config File')
+        print(repr(config2))
+
+        print('From Variable List')
+        print(repr(self.Test))
 
         # List all contents
         print("List all contents")
