@@ -6,6 +6,7 @@ from pathlib import Path
 
 import tkinter as tk
 from tkinter import ttk
+from tkinter import filedialog
 from tkinter import messagebox
 from tkinter.font import nametofont
 
@@ -55,17 +56,32 @@ class Application(tk.Tk):
             style.theme_use(theme)
 
         # configuration model & settings
-        config_file = 'config.ini'
-        self.config_model = m.Configuration_Model()
-        self.load_config()
+        config_file = self.settings.get('last config').get()
+        print('Config Model')
+        print(repr(config_file))
+        
+        if config_file is None:
+            config_file = 'config.ini'
 
+        self.config_model = m.Configuration_Model(config_file)
+        self.load_config(config_file)
         
         # callbacks
         self.callbacks = {
-            'file->select':self.on_file_select,
+            'file->open':self.on_file_open,
+            'file->save':self.on_file_save,
+            'file->saveas':self.on_file_saveas,
             'file->quit':self.quit,
             'go->imagefile':self.show_imagefile,
             'go->ccdreduction':self.show_ccdreduction,
+            'conf->directories':self.show_directoryinfo,
+            'conf->general':self.show_generalinfo,
+            'conf->biasdetails':self.show_biasinfo,
+            'conf->darkdetails':self.show_darkinfo,
+            'conf->flatdetails':self.show_flatinfo,
+            'conf->sciencedetails':self.show_scienceinfo,
+            'conf->masterdetails':self.show_masterinfo,
+            'conf->reduceddetails':self.show_reducedinfo,
             'on_open_image_file':self.open_image_file,
         }
 
@@ -93,9 +109,155 @@ class Application(tk.Tk):
         self.imagefileform.grid(row=0,padx=10,sticky='NSEW')
         self.populate_imagefileform()
 
-    def on_file_select(self):
-        """Handle the file->select action from the menu"""
-        pass
+        # Directories Configuration form
+        self.directoriesconfigurationform = v.DirectoriesConfigurationForm(
+            self,
+            m.Configuration_Model.fields['directories'],
+            self.settings,
+            self.callbacks
+        )
+        self.directoriesconfigurationform.grid(row=0,padx=10,sticky='NSEW')
+
+         # General Configuration form
+        self.generalconfigurationform = v.GeneralConfigurationForm(
+            self,
+            m.Configuration_Model.fields['general_details'],
+            self.settings,
+            self.callbacks
+        )
+        self.generalconfigurationform.grid(row=0,padx=10,sticky='NSEW')      
+
+        # Bias Details Configuration form
+        self.biasdetailsconfigurationform = v.BiasDetailsConfigurationForm(
+            self,
+            m.Configuration_Model.fields['bias_details'],
+            self.settings,
+            self.callbacks
+        )
+        self.biasdetailsconfigurationform.grid(row=0,padx=10,sticky='NSEW')
+
+        # Dark Details Configuration form
+        self.darkdetailsconfigurationform = v.DarkDetailsConfigurationForm(
+            self,
+            m.Configuration_Model.fields['dark_details'],
+            self.settings,
+            self.callbacks
+        )
+        self.darkdetailsconfigurationform.grid(row=0,padx=10,sticky='NSEW')
+
+        # Flat Details Configuration form
+        self.flatdetailsconfigurationform = v.FlatDetailsConfigurationForm(
+            self,
+            m.Configuration_Model.fields['flat_details'],
+            self.settings,
+            self.callbacks
+        )
+        self.flatdetailsconfigurationform.grid(row=0,padx=10,sticky='NSEW')  
+
+        # Science Details Configuration form
+        self.sciencedetailsconfigurationform = v.ScienceDetailsConfigurationForm(
+            self,
+            m.Configuration_Model.fields['science_details'],
+            self.settings,
+            self.callbacks
+        )
+        self.sciencedetailsconfigurationform.grid(row=0,padx=10,sticky='NSEW')
+
+        # Master Details Configuration form
+        self.masterdetailsconfigurationform = v.MasterDetailsConfigurationForm(
+            self,
+            m.Configuration_Model.fields['master_details'],
+            self.settings,
+            self.callbacks
+        )
+        self.masterdetailsconfigurationform.grid(row=0,padx=10,sticky='NSEW')
+
+        # Reduced Details Configuration form
+        self.reduceddetailsconfigurationform = v.ReducedDetailsConfigurationForm(
+            self,
+            m.Configuration_Model.fields['reduction_details'],
+            self.settings,
+            self.callbacks
+        )
+        self.reduceddetailsconfigurationform.grid(row=0,padx=10,sticky='NSEW')
+
+        self.populate_configurationforms()
+
+    def populate_configurationforms(self):
+        """Populate the Configuration Forms"""
+
+        print('Populate Forms')
+
+        self.populate_directoriesconfigurationform()
+        self.populate_generalconfigurationform()
+        self.populate_biasdetailsconfigurationform() 
+        self.populate_darkdetailsconfigurationform() 
+        self.populate_flatdetailsconfigurationform()
+        self.populate_sciencedetailsconfigurationform() 
+        self.populate_masterdetailsconfigurationform()
+        self.populate_reduceddetailsconfigurationform() 
+
+    def on_file_open(self):
+        """Handle the file->open action from the menu"""
+
+        filename = filedialog.askopenfilename(
+                title='Select the target file for opening',
+                defaultextension='.ini',
+                filetypes=(('configuration files','*.ini'),('all files','*.*')))
+
+        if filename is None or filename == "":
+            return
+
+        filename = os.path.basename(filename)
+
+        self.settings.get('last config').set(filename)
+
+        print(repr(filename))
+
+        self.config_model = m.Configuration_Model(filename)
+        self.populate_configurationforms()
+        self.load_config(filename)
+
+    def on_file_save(self,filename=None):
+        """Handle the file->save action from the menu"""
+        
+        self.config_model.config['directories'] = self.directoriesconfigurationform.save_form(self.config_model.config['directories'])
+        self.config_model.config['general_details'] = self.generalconfigurationform.save_form(self.config_model.config['general_details'])
+        self.config_model.config['bias_details'] = self.biasdetailsconfigurationform.save_form(self.config_model.config['bias_details'])
+        self.config_model.config['dark_details'] = self.darkdetailsconfigurationform.save_form(self.config_model.config['dark_details'])
+        self.config_model.config['flat_details'] = self.flatdetailsconfigurationform.save_form(self.config_model.config['flat_details'])
+        self.config_model.config['science_details'] = self.sciencedetailsconfigurationform.save_form(self.config_model.config['science_details'])
+        self.config_model.config['master_details'] = self.masterdetailsconfigurationform.save_form(self.config_model.config['master_details'])
+        self.config_model.config['reduction_details'] = self.reduceddetailsconfigurationform.save_form(self.config_model.config['reduction_details'])
+
+        self.config_model.save(filename)
+
+        if filename is None:
+            return
+
+        self.settings['last config'].set(filename)
+        
+    def on_file_saveas(self):
+        """Handle the file->saveas action from the menu"""
+        
+        filename = filedialog.asksaveasfilename(
+                title='Select the target file for saving configuration',
+                defaultextension='.ini',
+                filetypes=(('configuration files','*.ini'),('all files','*.*')))
+
+        if filename is None or filename == "":
+            return
+
+        filename = os.path.basename(filename)
+
+        self.on_file_save(filename)
+
+        """if filename:
+            self.filename.set(filename)
+            self.data_model = m.CSVModel(filename=self.filename.get())
+            self.populate_recordlist()
+            self.inserted_rows = []
+            self.updated_rows = [] """
 
     def show_imagefile(self):
         """Handle the go->imagefile action from the menu"""
@@ -108,6 +270,46 @@ class Application(tk.Tk):
 
         self.populate_ccdreductionform()
         self.ccdreductionform.tkraise()
+
+    def show_directoryinfo(self):
+        """Handle the conf->directories action from the menu"""
+        #self.populate_directoriesconfigurationform()
+        self.directoriesconfigurationform.tkraise()
+
+    def show_generalinfo(self):
+        """Handle the conf->general action from the menu"""
+        #self.populate_generalconfigurationform()
+        self.generalconfigurationform.tkraise()
+
+    def show_biasinfo(self):
+        """Handle the conf->biasdetails action from the menu"""
+        #self.populate_biasdetailsconfigurationform()
+        self.biasdetailsconfigurationform.tkraise()
+
+    def show_darkinfo(self):
+        """Handle the conf->darkdetails action from the menu"""
+        #self.populate_darkdetailsconfigurationform()
+        self.darkdetailsconfigurationform.tkraise()
+
+    def show_flatinfo(self):
+        """Handle the conf->flatdetails action from the menu"""
+        #self.populate_flatdetailsconfigurationform()
+        self.flatdetailsconfigurationform.tkraise()
+
+    def show_scienceinfo(self):
+        """Handle the conf->sciencedetails action from the menu"""
+        #self.populate_sciencedetailsconfigurationform()
+        self.sciencedetailsconfigurationform.tkraise()
+
+    def show_masterinfo(self):
+        """Handle the conf->masterdetails action from the menu"""
+        #self.populate_masterdetailsconfigurationform()
+        self.masterdetailsconfigurationform.tkraise()
+
+    def show_reducedinfo(self):
+        """Handle the conf->reduceddetails action from the menu"""
+        #self.populate_reduceddetailsconfigurationform()
+        self.reduceddetailsconfigurationform.tkraise()
 
     def open_image_file(self,filename=None):
         if filename is None:
@@ -167,6 +369,60 @@ class Application(tk.Tk):
 
         self.ccdreductionform.populate_files(rows)
 
+    def populate_configurationform(self):
+        
+        working_path = '.'
+        image_path = 'samples'
+        default_path = os.path.join(working_path,image_path)
+        files = Path(default_path).glob('*.fits')
+
+        rows = []
+
+        for file in files:
+            path = str(file)
+            filename = str(file.name)
+            parent = str(file.parent)
+            if parent == '.' or parent == image_path:
+                parent = ''
+            row = {'Filename':filename,'Parent':parent,'Path':path}
+            rows.append(row)
+
+        self.ccdreductionform.populate_files(rows)
+
+    def populate_directoriesconfigurationform(self):
+
+        print('pop dir')
+
+        self.directoriesconfigurationform.populate_form(self.config_model.config['directories'])
+
+    def populate_generalconfigurationform(self):
+
+        self.generalconfigurationform.populate_form(self.config_model.config['general_details'])
+
+    def populate_biasdetailsconfigurationform(self):
+
+        self.biasdetailsconfigurationform.populate_form(self.config_model.config['bias_details'])
+
+    def populate_darkdetailsconfigurationform(self):
+
+        self.darkdetailsconfigurationform.populate_form(self.config_model.config['dark_details'])
+
+    def populate_flatdetailsconfigurationform(self):
+
+        self.flatdetailsconfigurationform.populate_form(self.config_model.config['flat_details'])
+
+    def populate_sciencedetailsconfigurationform(self):
+
+        self.sciencedetailsconfigurationform.populate_form(self.config_model.config['science_details'])
+
+    def populate_masterdetailsconfigurationform(self):
+
+        self.masterdetailsconfigurationform.populate_form(self.config_model.config['master_details'])
+
+    def populate_reduceddetailsconfigurationform(self):
+
+        self.reduceddetailsconfigurationform.populate_form(self.config_model.config['reduction_details'])
+
     def save_settings(self,*args):
         """Save the current settings to a preferences file"""
 
@@ -194,7 +450,7 @@ class Application(tk.Tk):
         for var in self.settings.values():
             var.trace('w', self.save_settings)
 
-    def load_config(self):
+    def load_config(self,filename = None):
         """Load configuration"""
 
         vartypes = {
@@ -207,23 +463,20 @@ class Application(tk.Tk):
         self.configuration = {}
 
         # create dict of configuration variables from the model's settings.
-        self.configuration['Directories'] = {}
-        for key, data in self.config_model.Directories.items():
+        self.configuration['directories'] = {}
+        for key, data in self.config_model.directories.items():
             vartype = vartypes.get(data['type'], tk.StringVar)
-            self.configuration['Directories'][key] = vartype(value=data['value'])
+            self.configuration['directories'][key] = vartype(value=data['value'])
 
-        self.configuration['FileModifiers'] = {}
-        for key, data in self.config_model.FileModifiers.items():
+        self.configuration['reduction_details'] = {}
+        for key, data in self.config_model.reduction_details.items():
             vartype = vartypes.get(data['type'], tk.StringVar)
-            self.configuration['FileModifiers'][key] = vartype(value=data['value'])
+            self.configuration['reduction_details'][key] = vartype(value=data['value'])
 
-        self.configuration['MasterNames'] = {}
-        for key, data in self.config_model.MasterNames.items():
+        self.configuration['master_details'] = {}
+        for key, data in self.config_model.master_details.items():
             vartype = vartypes.get(data['type'], tk.StringVar)
-            self.configuration['MasterNames'][key] = vartype(value=data['value'])
-
-        print(repr(self.configuration))
-        
+            self.configuration['master_details'][key] = vartype(value=data['value'])
 
     def create_collections(self):
         #create all collections
@@ -252,9 +505,6 @@ class Application(tk.Tk):
         directorylist = (paths['bias_dir'],paths['dark_dir'],paths['flat_dir'],paths['science_dir'],paths['master_dir'],paths['output_dir'])
 
         m.ImageCollection.performreduction(self.collection,self.settings,directorylist)
-
-
-
 
     def set_font(self,*args):
         font_size = self.settings['font size'].get()

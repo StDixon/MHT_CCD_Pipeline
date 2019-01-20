@@ -287,7 +287,9 @@ class LabelInput(tk.Frame):
         FT.long_string: (tk.Text, lambda: None),
         FT.decimal: (ValidatedSpinbox, tk.DoubleVar),
         FT.integer: (ValidatedSpinbox, tk.IntVar),
-        FT.boolean: (ttk.Checkbutton, tk.BooleanVar)
+        FT.boolean: (ttk.Checkbutton, tk.BooleanVar),
+        FT.rboolean: (ttk.Radiobutton, tk.BooleanVar),
+        FT.rinteger: (ttk.Radiobutton, tk.IntVar),
     }
 
     def __init__(self, parent, label='', input_class=None,

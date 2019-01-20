@@ -26,9 +26,19 @@ class GenericMainMenu(tk.Menu):
         file_menu = tk.Menu(self,tearoff=False)
 
         file_menu.add_command(
-            label='Select file...',
-            command=self.callbacks['file->select'],
+            label='Open file...',
+            command=self.callbacks['file->open'],
             accelerator='Ctrl-O'
+        )
+        file_menu.add_command(
+            label='Save',
+            command=self.callbacks['file->save'],
+            accelerator='Ctrl-S'
+        )
+        file_menu.add_command(
+            label='Save as...',
+            command=self.callbacks['file->saveas'],
+            accelerator='Ctrl-A'
         )
         file_menu.add_separator()
         file_menu.add_command(
@@ -41,10 +51,13 @@ class GenericMainMenu(tk.Menu):
         # Go menu
         go_menu = tk.Menu(self,tearoff=False)
 
+        # Show Headers
         go_menu.add_command(
             label='Show Image File',
             command=self.callbacks['go->imagefile']
         )
+
+        # Perform Reduction
         go_menu.add_command(
             label='CCD Reduction',
             command=self.callbacks['go->ccdreduction']
@@ -86,15 +99,53 @@ class GenericMainMenu(tk.Menu):
         # Config sub menu
         config_menu = tk.Menu(self,tearoff=False)
 
-        # File Location sub-sub menu
-        file_loc_menu = tk.Menu(self,tearoff=False)
+        # Directories sub-sub menu
+        config_menu.add_command(
+            label='Directories',
+            command=self.callbacks['conf->directories']
+        )
 
-        config_menu.add_cascade(label='File locations',menu=file_loc_menu)
+        # General sub-sub menu
+        config_menu.add_command(
+            label='General',
+            command=self.callbacks['conf->general']
+        )
 
-        # Master names sub-sub menu
-        master_names_menu = tk.Menu(self,tearoff=False)
+        # Bias sub-sub menu
+        config_menu.add_command(
+            label='Bias Details',
+            command=self.callbacks['conf->biasdetails']
+        )
 
-        config_menu.add_cascade(label='Master names',menu=master_names_menu)
+        # Dark sub-sub menu
+        config_menu.add_command(
+            label='Dark Details',
+            command=self.callbacks['conf->darkdetails']
+        )
+
+        # Flat sub-sub menu
+        config_menu.add_command(
+            label='Flat Details',
+            command=self.callbacks['conf->flatdetails']
+        )
+
+        # Science sub-sub menu
+        config_menu.add_command(
+            label='Science Details',
+            command=self.callbacks['conf->sciencedetails']
+        )
+
+        # Master sub-sub menu
+        config_menu.add_command(
+            label='Master Details',
+            command=self.callbacks['conf->masterdetails']
+        )
+
+        # Reduction sub-sub menu
+        config_menu.add_command(
+            label='Reduced Details',
+            command=self.callbacks['conf->reduceddetails']
+        )
 
         pref_menu.add_cascade(label='Configuration',menu=config_menu)
 
@@ -111,7 +162,9 @@ class GenericMainMenu(tk.Menu):
 
     def get_keybinds(self):
         return{
-            '<Control-o>':self.callbacks['file->select'],
+            '<Control-o>':self.callbacks['file->open'],
+            '<Control-s>':self.callbacks['file->save'],
+            '<Control-a>':self.callbacks['file->saveas'],
             '<Control-q>':self.callbacks['file->quit'],
         }
 

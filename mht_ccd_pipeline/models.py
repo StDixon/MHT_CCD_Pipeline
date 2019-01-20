@@ -52,7 +52,7 @@ class Settings_Model:
     variables = {
         'font size': {'type':'int','value':9},
         'theme': {'type':'str','value':'default'},
-        'last config': {'type':'str','value':''}
+        'last config': {'type':'str','value':'config.ini'}
     }
 
     def __init__(self,filename='mht_settings.json',path='~'):
@@ -98,98 +98,135 @@ class Settings_Model:
 class Configuration_Model:
     """A model for saving application configuration settings"""
 
-    Directories = {
-        'source_dir': {'type':'str','value':'source'},
-        'working_dir': {'type':'str','value':'working'},
-        'calibration_dir': {'type':'str','value':'calibration'},
-        'bias_dir': {'type':'str','value':'bias'},
-        'dark_dir': {'type':'str','value':'dark'},
-        'flat_dir': {'type':'str','value':'flat'},
-        'master_dir': {'type':'str','value':'master'},
-        'science_dir': {'type':'str','value':'science'},
-        'output_dir': {'type':'str','value':'output'}
+    directories = {
+        'source_dir': {'req': True,'type':FT.string,'value':'source'},
+        'bias_dir': {'req': True,'type':FT.string,'value':'bias'},
+        'dark_dir': {'req': True,'type':FT.string,'value':'dark'},
+        'flat_dir': {'req': True,'type':FT.string,'value':'flat'},
+        'master_dir': {'req': True,'type':FT.string,'value':'master'},
+        'science_dir': {'req': True,'type':FT.string,'value':'science'},
+        'output_dir': {'req': True,'type':FT.string,'value':'output'},
+        'working_dir': {'req': True,'type':FT.string,'value':'working'},
+        'save_masters': {'req': True,'type':FT.boolean,'value':'True'},
+        'save_working': {'req': True,'type':FT.boolean,'value':'True'},
     }
 
-    FileModifiers = {
-        'bias_removal': {'type':'str','value':'br'},
-        'dark_subtract': {'type':'str','value':'ds'},
-        'reduced': {'type':'str','value':'red'},
-        'prefix_suffix_mod': {'type':'str','value':'_'},
-        'bias_removal_prefix': {'type':'bool','value':'False'},
-        'dark_subtract_prefix': {'type':'bool','value':'False'},
-        'reduced_prefix': {'type':'bool','value':'False'}
+    general_details = {
+        'fits_header_CCD_Temp': {'req': True,'type':FT.string,'value': 'TEMP'},
+        'fits_header_exposure': {'req': True,'type':FT.string,'value': 'EXPOSURE'},
     }
 
-    MasterNames = {
-        'master_bias_name': {'type':'str','value':'master_bias'},
-        'master_dark_name': {'type':'str','value':'master_dark'},
-        'master_flat_name': {'type':'str','value':'master_flat'},
+    bias_details = {
+        'fits_header_image': {'req': True,'type':FT.string,'value': 'IMAGETYP'},
+        'fits_header_image_value': {'req': True,'type':FT.string,'value': 'Bias Frame'},
+        'filename_text': {'req': True,'type':FT.string,'value': 'bias'},
+        'use_fits': {'req': True,'type':FT.boolean,'value':'True'},
+        'use_filename': {'req': True,'type':FT.boolean,'value':'False'},
+        'update_fits': {'req': True,'type':FT.boolean,'value':'True'},
     }
 
-    Test = {'Directories':Directories,'FileModifiers':FileModifiers,'MasterNames':MasterNames}
+    dark_details = {
+        'fits_header_image': {'req': True,'type':FT.string,'value': 'IMAGETYP'},
+        'fits_header_image_value': {'req': True,'type':FT.string,'value': 'Dark Frame'},
+        'filename_text': {'req': True,'type':FT.string,'value': 'dark'},
+        'use_fits': {'req': True,'type':FT.boolean,'value':'True'},
+        'use_filename': {'req': True,'type':FT.boolean,'value':'False'},
+        'update_fits': {'req': True,'type':FT.boolean,'value':'True'},
+    }
+
+    flat_details = {
+        'fits_header_image': {'req': True,'type':FT.string,'value': 'IMAGETYP'},
+        'fits_header_image_value': {'req': True,'type':FT.string,'value': 'Flat Frame'},
+        'filename_text': {'req': True,'type':FT.string,'value': 'flat'},
+        'use_fits': {'req': True,'type':FT.boolean,'value':'True'},
+        'use_filename': {'req': True,'type':FT.boolean,'value':'False'},
+        'update_fits': {'req': True,'type':FT.boolean,'value':'True'},
+        'fits_header_filter': {'req': True,'type':FT.string,'value': 'FILTER'},
+        'filename_text_filter': {'req': True,'type':FT.string,'value': {'Ha','B','R','G'}},
+        'use_fits_filter': {'req': True,'type':FT.boolean,'value':'True'},
+        'use_filename_filter': {'req': True,'type':FT.boolean,'value':'False'},
+        'update_fits_filter': {'req': True,'type':FT.boolean,'value':'True'},
+    }
+
+    science_details = {
+        'fits_header_image': {'req': True,'type':FT.string,'value': 'IMAGETYP'},
+        'fits_header_image_value': {'req': True,'type':FT.string,'value': 'Light Frame'},
+        'filename_text': {'req': True,'type':FT.string,'value': ''},
+        'use_fits': {'req': True,'type':FT.boolean,'value':'True'},
+        'use_filename': {'req': True,'type':FT.boolean,'value':'False'},
+        'update_fits': {'req': True,'type':FT.boolean,'value':'True'},
+        'fits_header_filter': {'req': True,'type':FT.string,'value': 'FILTER'},
+        'filename_text_filter': {'req': True,'type':FT.string,'value': {'Ha','B','R','G'}},
+        'use_fits_filter': {'req': True,'type':FT.boolean,'value':'True'},
+        'use_filename_filter': {'req': True,'type':FT.boolean,'value':'False'},
+        'update_fits_filter': {'req': True,'type':FT.boolean,'value':'True'},
+    }
+
+    master_details = {
+        'filename_bias': {'req': True,'type':FT.string,'value':'master_bias'},
+        'filename_dark': {'req': True,'type':FT.string,'value':'master_dark'},
+        'filename_flat': {'req': True,'type':FT.string,'value':'master_flat'},
+        'fits_header_image': {'req': True,'type':FT.string,'value': 'IMAGETYP'},
+        'fits_header_image_value_bias': {'req': True,'type':FT.string,'value': 'Master Bias'},
+        'fits_header_image_value_dark': {'req': True,'type':FT.string,'value': 'Master Dark'},
+        'fits_header_image_value_flat': {'req': True,'type':FT.string,'value': 'Master Flat'},
+        'update_fits': {'req': True,'type':FT.boolean,'value':'True'},
+    }
+
+    reduction_details = {
+        'filename_bias_stub': {'req': True,'type':FT.string,'value':'br'},
+        'filename_bias_prefix': {'req': True,'type':FT.boolean,'value':'False'},
+        'filename_bias_suffix': {'req': True,'type':FT.boolean,'value':'True'},
+        'filename_dark_stub': {'req': True,'type':FT.string,'value':'ds'},
+        'filename_dark_prefix': {'req': True,'type':FT.boolean,'value':'False'},
+        'filename_dark_suffix': {'req': True,'type':FT.boolean,'value':'True'},
+        'filename_flat_stub': {'req': True,'type':FT.string,'value':'fr'},
+        'filename_flat_prefix': {'req': True,'type':FT.boolean,'value':'False'},
+        'filename_flat_suffix': {'req': True,'type':FT.boolean,'value':'True'},
+        'filename_reduced_stub': {'req': True,'type':FT.string,'value':'reduced'},
+        'filename_reduced_prefix': {'req': True,'type':FT.boolean,'value':'False'},
+        'filename_reduced_suffix': {'req': True,'type':FT.boolean,'value':'True'},
+        'filename_prefix_suffix_modifier': {'req': True,'type':FT.string,'value':'_'},
+    }
+
+    fields = {'directories':directories,'general_details':general_details,'bias_details':bias_details,
+    'dark_details':dark_details,'flat_details':flat_details,'science_details':science_details,
+    'master_details':master_details,'reduction_details':reduction_details}
 
     def __init__(self,filename=None,path=None):
         #load in last saved config file values
+        
         self.load(filename)
 
-    def load(self,filename):
+    def load(self,filename=None):
         """Load the configuration from the file"""
         
-        filename = 'config.ini'
+        if filename is None:
+            filename = 'config.ini'
+
+        print(repr(filename))
 
         # if the file doesn't exist, return
         if not os.path.exists(filename):
             return
 
+        print('loading config')
+
         # Load the configuration file
-        config = configparser.ConfigParser()
-        config.read(filename)
-
-        config2 = ConfigObj('example.ini')
-        
-        print('From Config File')
-        print(repr(config2))
-
-        print('From Variable List')
-        print(repr(self.Test))
-
-        # List all contents
-        print("List all contents")
-        for section in config.sections():
-            print("Section: %s" % section)
-            for options in config.options(section):
-                print("x %s:::%s:::%s" % (options,
-                                    config.get(section, options),
-                                    str(type(options))))
+        self.config = ConfigObj(filename)
 
         self.save()
 
-    def save(self):
+    def save(self,filename=None):
         """Save the configuration to file"""
-      
-        config = configparser.ConfigParser()
+        if filename  is not None:
+            self.config.filename = filename
+        self.config.write()
 
-        config['Directories']={}
-        for option in self.Directories:
-            config['Directories'][option]=str(self.Directories[option]['value'])
-
-        config['FileModifiers']={}
-        for option in self.FileModifiers:
-            config['FileModifiers'][option]=str(self.FileModifiers[option]['value'])
-
-        config['MasterNames']={}
-        for option in self.MasterNames:
-            config['MasterNames'][option]=str(self.MasterNames[option]['value'])
-
-        with open('example.ini', 'w') as configfile:
-            config.write(configfile)
- 
-
-    def saveas(self):
+    def saveas(self,filename):
         """Save the configuration to a new file"""
-        pass
+        self.save(filename)
         
-
 class ImageCollection_Model():
     """Image collection model"""
 
