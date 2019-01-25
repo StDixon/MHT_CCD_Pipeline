@@ -204,13 +204,9 @@ class Configuration_Model:
         if filename is None:
             filename = 'config.ini'
 
-        print(repr(filename))
-
         # if the file doesn't exist, return
         if not os.path.exists(filename):
             return
-
-        print('loading config')
 
         # Load the configuration file
         self.config = ConfigObj(filename)
@@ -415,8 +411,14 @@ class ImageCollection_Model():
         print('Create Directories')
         self.createWorkingDirectories(directorylist)
 
+        if True:
+            return
+
         print('Copy Images')
         self.copyImageTypes(self.ic,directorylist,self.imagelist)
+
+        if True:
+            return
 
         print('Create Collections')
         bias_ic = ImageFileCollection(self.paths['bias_dir'], self.keywords)

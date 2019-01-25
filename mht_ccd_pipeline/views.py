@@ -1010,7 +1010,7 @@ class DirectoriesConfigurationForm(tk.Frame):
     
     def populate_form(self,fields):
         """ Populate Form"""
-        print('dir class pop')
+
         self.inputs['Source'].set(fields['source_dir'])
         self.inputs['Science'].set(fields['science_dir'])
         self.inputs['Masters'].set(fields['master_dir'])

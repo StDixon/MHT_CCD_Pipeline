@@ -57,8 +57,6 @@ class Application(tk.Tk):
 
         # configuration model & settings
         config_file = self.settings.get('last config').get()
-        print('Config Model')
-        print(repr(config_file))
         
         if config_file is None:
             config_file = 'config.ini'
@@ -186,8 +184,6 @@ class Application(tk.Tk):
     def populate_configurationforms(self):
         """Populate the Configuration Forms"""
 
-        print('Populate Forms')
-
         self.populate_directoriesconfigurationform()
         self.populate_generalconfigurationform()
         self.populate_biasdetailsconfigurationform() 
@@ -211,8 +207,6 @@ class Application(tk.Tk):
         filename = os.path.basename(filename)
 
         self.settings.get('last config').set(filename)
-
-        print(repr(filename))
 
         self.config_model = m.Configuration_Model(filename)
         self.populate_configurationforms()
@@ -252,13 +246,6 @@ class Application(tk.Tk):
 
         self.on_file_save(filename)
 
-        """if filename:
-            self.filename.set(filename)
-            self.data_model = m.CSVModel(filename=self.filename.get())
-            self.populate_recordlist()
-            self.inserted_rows = []
-            self.updated_rows = [] """
-
     def show_imagefile(self):
         """Handle the go->imagefile action from the menu"""
         self.populate_imagefileform()
@@ -273,42 +260,42 @@ class Application(tk.Tk):
 
     def show_directoryinfo(self):
         """Handle the conf->directories action from the menu"""
-        #self.populate_directoriesconfigurationform()
+ 
         self.directoriesconfigurationform.tkraise()
 
     def show_generalinfo(self):
         """Handle the conf->general action from the menu"""
-        #self.populate_generalconfigurationform()
+ 
         self.generalconfigurationform.tkraise()
 
     def show_biasinfo(self):
         """Handle the conf->biasdetails action from the menu"""
-        #self.populate_biasdetailsconfigurationform()
+
         self.biasdetailsconfigurationform.tkraise()
 
     def show_darkinfo(self):
         """Handle the conf->darkdetails action from the menu"""
-        #self.populate_darkdetailsconfigurationform()
+
         self.darkdetailsconfigurationform.tkraise()
 
     def show_flatinfo(self):
         """Handle the conf->flatdetails action from the menu"""
-        #self.populate_flatdetailsconfigurationform()
+
         self.flatdetailsconfigurationform.tkraise()
 
     def show_scienceinfo(self):
         """Handle the conf->sciencedetails action from the menu"""
-        #self.populate_sciencedetailsconfigurationform()
+
         self.sciencedetailsconfigurationform.tkraise()
 
     def show_masterinfo(self):
         """Handle the conf->masterdetails action from the menu"""
-        #self.populate_masterdetailsconfigurationform()
+
         self.masterdetailsconfigurationform.tkraise()
 
     def show_reducedinfo(self):
         """Handle the conf->reduceddetails action from the menu"""
-        #self.populate_reduceddetailsconfigurationform()
+
         self.reduceddetailsconfigurationform.tkraise()
 
     def open_image_file(self,filename=None):
@@ -390,8 +377,6 @@ class Application(tk.Tk):
         self.ccdreductionform.populate_files(rows)
 
     def populate_directoriesconfigurationform(self):
-
-        print('pop dir')
 
         self.directoriesconfigurationform.populate_form(self.config_model.config['directories'])
 
@@ -489,13 +474,25 @@ class Application(tk.Tk):
         filemods['master_flat_name'] = 'master_flat'
 
         paths = {}
-        paths['source_dir'] = 'samples'
-        paths['bias_dir'] = 'working/calibration/bias'
-        paths['dark_dir'] = 'working/calibration/dark'
-        paths['flat_dir'] = 'working/calibration/flat'
-        paths['master_dir'] = 'working/calibration/masters'
-        paths['science_dir'] = 'working/science'
-        paths['output_dir'] = 'working/output'
+        paths['source_dir'] = self.config_model.config['directories']['source_dir']
+        paths['bias_dir'] = os.path.join(
+                                self.config_model.config['directories']['working_dir'],
+                                self.config_model.config['directories']['bias_dir'])
+        paths['dark_dir'] = os.path.join(
+                                self.config_model.config['directories']['working_dir'],
+                                self.config_model.config['directories']['dark_dir'])
+        paths['flat_dir'] = os.path.join(
+                                self.config_model.config['directories']['working_dir'],
+                                self.config_model.config['directories']['flat_dir'])
+        paths['master_dir'] = os.path.join(
+                                self.config_model.config['directories']['working_dir'],
+                                self.config_model.config['directories']['master_dir'])
+        paths['science_dir'] = os.path.join(
+                                self.config_model.config['directories']['working_dir'],
+                                self.config_model.config['directories']['science_dir'])
+        paths['output_dir'] = os.path.join(
+                                self.config_model.config['directories']['working_dir'],
+                                self.config_model.config['directories']['output_dir'])
 
         #keywords = ("IMAGETYP", "FILTER", "OBJECT", "EXPOSURE", "EXPTIME", "CCDTEMP")
         keywords = ("IMAGETYP", "FILTER", "OBJECT", "EXPTIME", "CCDTEMP")
@@ -504,7 +501,7 @@ class Application(tk.Tk):
 
         directorylist = (paths['bias_dir'],paths['dark_dir'],paths['flat_dir'],paths['science_dir'],paths['master_dir'],paths['output_dir'])
 
-        m.ImageCollection.performreduction(self.collection,self.settings,directorylist)
+        m.ImageCollection_Model.performreduction(self.collection,self.settings,directorylist)
 
     def set_font(self,*args):
         font_size = self.settings['font size'].get()
