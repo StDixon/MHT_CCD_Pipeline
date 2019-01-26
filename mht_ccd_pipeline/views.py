@@ -1066,17 +1066,30 @@ class GeneralConfigurationForm(tk.Frame):
                                    )
         
         # Line 1
+        self.inputs['FITS Header Image Type'] = w.LabelInput(
+                GeneralDetails, "FITS Header Image Type",
+                field_spec=fields['fits_header_image_type'],
+                label_args={'style':'GeneralDetails.TLabel'})
+        self.inputs['FITS Header Image Type'].grid(row=0, column=0)
+
+        self.inputs['FITS Header Filter'] = w.LabelInput(
+                GeneralDetails, "FITS Header Filter",
+                field_spec=fields['fits_header_filter'],
+                label_args={'style':'GeneralDetails.TLabel'})
+        self.inputs['FITS Header Filter'].grid(row=0, column=1)
+
+        # Line 2
         self.inputs['FITS Header Exposure'] = w.LabelInput(
                 GeneralDetails, "FITS Header Exposure",
                 field_spec=fields['fits_header_exposure'],
                 label_args={'style':'GeneralDetails.TLabel'})
-        self.inputs['FITS Header Exposure'].grid(row=0, column=0)
+        self.inputs['FITS Header Exposure'].grid(row=1, column=0)
 
         self.inputs['FITS Header CCD Temp'] = w.LabelInput(
                 GeneralDetails, "FITS Header CCD Temp",
                 field_spec=fields['fits_header_CCD_Temp'],
                 label_args={'style':'GeneralDetails.TLabel'})
-        self.inputs['FITS Header CCD Temp'].grid(row=0, column=1)
+        self.inputs['FITS Header CCD Temp'].grid(row=1, column=1)
 
         GeneralDetails.grid(row=0, column=0, sticky=tk.W + tk.E)
  
@@ -1107,12 +1120,16 @@ class GeneralConfigurationForm(tk.Frame):
     def populate_form(self,fields):
         """ Populate Form"""
         
+        self.inputs['FITS Header Image Type'].set(fields['fits_header_image_type'])
+        self.inputs['FITS Header Filter'].set(fields['fits_header_filter'])
         self.inputs['FITS Header Exposure'].set(fields['fits_header_exposure'])
         self.inputs['FITS Header CCD Temp'].set(fields['fits_header_CCD_temp'])
 
     def save_form(self,fields):
         """ Save Form"""
 
+        fields['fits_header_image_type'] = self.inputs['FITS Header Image Type'].get()
+        fields['fits_header_filter'] = self.inputs['FITS Header Filter'].get()
         fields['fits_header_exposure'] = self.inputs['FITS Header Exposure'].get()
         fields['fits_header_CCD_temp'] = self.inputs['FITS Header CCD Temp'].get()
 
@@ -1146,23 +1163,18 @@ class BiasDetailsConfigurationForm(tk.Frame):
                                    )
         
         # Line 1
-        self.inputs['FITS Header Image'] = w.LabelInput(
-                BiasDetails, "FITS Header Image",
-                field_spec=fields['fits_header_image'],
-                label_args={'style':'BiasDetails.TLabel'})
-        self.inputs['FITS Header Image'].grid(row=0, column=0)
-
+        
         self.inputs['FITS Header Value'] = w.LabelInput(
                 BiasDetails, "FITS Header Value",
                 field_spec=fields['fits_header_image_value'],
                 label_args={'style':'BiasDetails.TLabel'})
-        self.inputs['FITS Header Value'].grid(row=0, column=1)
+        self.inputs['FITS Header Value'].grid(row=0, column=0)
 
         self.inputs['Filename Text'] = w.LabelInput(
                 BiasDetails, "Filename Text",
                 field_spec=fields['filename_text'],
                 label_args={'style':'BiasDetails.TLabel'})
-        self.inputs['Filename Text'].grid(row=0, column=2)
+        self.inputs['Filename Text'].grid(row=0, column=1)
 
         #Line 2
         self.inputs['Use FITS Header'] = w.LabelInput(
@@ -1216,7 +1228,6 @@ class BiasDetailsConfigurationForm(tk.Frame):
     def populate_form(self,fields):
         """ Populate Form"""
         
-        self.inputs['FITS Header Image'].set(fields['fits_header_image'])
         self.inputs['FITS Header Value'].set(fields['fits_header_image_value'])
         self.inputs['Filename Text'].set(fields['filename_text'])
         self.inputs['Use FITS Header'].set(fields.as_bool('use_fits'))
@@ -1226,7 +1237,6 @@ class BiasDetailsConfigurationForm(tk.Frame):
     def save_form(self,fields):
         """ Save Form"""
 
-        fields['fits_header_image'] = self.inputs['FITS Header Image'].get()
         fields['fits_header_image_value'] = self.inputs['FITS Header Value'].get()
         fields['filename_text'] = self.inputs['Filename Text'].get()
         fields['use_fits'] = self.inputs['Use FITS Header'].get()
@@ -1263,23 +1273,17 @@ class DarkDetailsConfigurationForm(tk.Frame):
                                    )
         
         # Line 1
-        self.inputs['FITS Header Image'] = w.LabelInput(
-                DarkDetails, "FITS Header Image",
-                field_spec=fields['fits_header_image'],
-                label_args={'style':'DarkDetails.TLabel'})
-        self.inputs['FITS Header Image'].grid(row=0, column=0)
-
         self.inputs['FITS Header Value'] = w.LabelInput(
                 DarkDetails, "FITS Header Value",
                 field_spec=fields['fits_header_image_value'],
                 label_args={'style':'DarkDetails.TLabel'})
-        self.inputs['FITS Header Value'].grid(row=0, column=1)
+        self.inputs['FITS Header Value'].grid(row=0, column=0)
 
         self.inputs['Filename Text'] = w.LabelInput(
                 DarkDetails, "Filename Text",
                 field_spec=fields['filename_text'],
                 label_args={'style':'DarkDetails.TLabel'})
-        self.inputs['Filename Text'].grid(row=0, column=2)
+        self.inputs['Filename Text'].grid(row=0, column=1)
 
         #Line 2
         self.inputs['Use FITS Header'] = w.LabelInput(
@@ -1334,7 +1338,6 @@ class DarkDetailsConfigurationForm(tk.Frame):
     def populate_form(self,fields):
         """ Populate Form"""
         
-        self.inputs['FITS Header Image'].set(fields['fits_header_image'])
         self.inputs['FITS Header Value'].set(fields['fits_header_image_value'])
         self.inputs['Filename Text'].set(fields['filename_text'])
         self.inputs['Use FITS Header'].set(fields.as_bool('use_fits'))
@@ -1344,7 +1347,6 @@ class DarkDetailsConfigurationForm(tk.Frame):
     def save_form(self,fields):
         """ Save Form"""
 
-        fields['fits_header_image'] = self.inputs['FITS Header Image'].get()
         fields['fits_header_image_value'] = self.inputs['FITS Header Value'].get()
         fields['filename_text'] = self.inputs['Filename Text'].get()
         fields['use_fits'] = self.inputs['Use FITS Header'].get()
@@ -1381,23 +1383,17 @@ class FlatDetailsConfigurationForm(tk.Frame):
                                    )
         
         # Line 1
-        self.inputs['FITS Header Image'] = w.LabelInput(
-                FlatDetails, "FITS Header Image",
-                field_spec=fields['fits_header_image'],
-                label_args={'style':'FlatDetails.TLabel'})
-        self.inputs['FITS Header Image'].grid(row=0, column=0)
-
         self.inputs['FITS Header Value'] = w.LabelInput(
                 FlatDetails, "FITS Header Value",
                 field_spec=fields['fits_header_image_value'],
                 label_args={'style':'FlatDetails.TLabel'})
-        self.inputs['FITS Header Value'].grid(row=0, column=1)
+        self.inputs['FITS Header Value'].grid(row=0, column=0)
 
         self.inputs['Filename Text'] = w.LabelInput(
                 FlatDetails, "Filename Text",
                 field_spec=fields['filename_text'],
                 label_args={'style':'FlatDetails.TLabel'})
-        self.inputs['Filename Text'].grid(row=0, column=2)
+        self.inputs['Filename Text'].grid(row=0, column=1)
 
         #Line 2
         self.inputs['Use FITS Header'] = w.LabelInput(
@@ -1423,17 +1419,11 @@ class FlatDetailsConfigurationForm(tk.Frame):
         self.inputs['Update FITS Header'].grid(row=2, column=0, columnspan=3)
 
         # Line 4
-        self.inputs['FITS Header Filter'] = w.LabelInput(
-                FlatDetails, "FITS Header Filter",
-                field_spec=fields['fits_header_filter'],
-                label_args={'style':'FlatDetails.TLabel'})
-        self.inputs['FITS Header Filter'].grid(row=3, column=0)
-
         self.inputs['Filename Filter Text'] = w.LabelInput(
                 FlatDetails, "Filename Filter Text",
                 field_spec=fields['filename_text_filter'],
                 label_args={'style':'FlatDetails.TLabel'})
-        self.inputs['Filename Filter Text'].grid(row=3, column=1)
+        self.inputs['Filename Filter Text'].grid(row=3, column=0)
 
         #Line 5
         self.inputs['Use FITS Header Filter'] = w.LabelInput(
@@ -1487,13 +1477,11 @@ class FlatDetailsConfigurationForm(tk.Frame):
     def populate_form(self,fields):
         """ Populate Form"""
         
-        self.inputs['FITS Header Image'].set(fields['fits_header_image'])
         self.inputs['FITS Header Value'].set(fields['fits_header_image_value'])
         self.inputs['Filename Text'].set(fields['filename_text'])
         self.inputs['Use FITS Header'].set(fields.as_bool('use_fits'))
         self.inputs['Use Filename'].set(fields.as_bool('use_filename'))
         self.inputs['Update FITS Header'].set(fields.as_bool('update_fits'))
-        self.inputs['FITS Header Filter'].set(fields['fits_header_filter'])
         self.inputs['Filename Filter Text'].set(fields['filename_text_filter'])
         self.inputs['Use FITS Header Filter'].set(fields.as_bool('use_fits_filter'))
         self.inputs['Use Filename Filter'].set(fields.as_bool('use_filename_filter'))
@@ -1502,13 +1490,11 @@ class FlatDetailsConfigurationForm(tk.Frame):
     def save_form(self,fields):
         """ Save Form"""
 
-        fields['fits_header_image'] = self.inputs['FITS Header Image'].get()
         fields['fits_header_image_value'] = self.inputs['FITS Header Value'].get()
         fields['filename_text'] = self.inputs['Filename Text'].get()
         fields['use_fits'] = self.inputs['Use FITS Header'].get()
         fields['use_filename'] = self.inputs['Use Filename'].get()
         fields['update_fits'] = self.inputs['Update FITS Header'].get()
-        fields['fits_header_filter'] = self.inputs['FITS Header Filter'].get()
         fields['filename_text_filter'] = self.inputs['Filename Filter Text'].get()
         fields['use_fits_filter'] = self.inputs['Use FITS Header Filter'].get()
         fields['use_filename_filter'] = self.inputs['Use Filename Filter'].get()
@@ -1544,23 +1530,17 @@ class ScienceDetailsConfigurationForm(tk.Frame):
                                    )
         
         # Line 1
-        self.inputs['FITS Header Image'] = w.LabelInput(
-                ScienceDetails, "FITS Header Image",
-                field_spec=fields['fits_header_image'],
-                label_args={'style':'ScienceDetails.TLabel'})
-        self.inputs['FITS Header Image'].grid(row=0, column=0)
-
         self.inputs['FITS Header Value'] = w.LabelInput(
                 ScienceDetails, "FITS Header Value",
                 field_spec=fields['fits_header_image_value'],
                 label_args={'style':'ScienceDetails.TLabel'})
-        self.inputs['FITS Header Value'].grid(row=0, column=1)
+        self.inputs['FITS Header Value'].grid(row=0, column=0)
 
         self.inputs['Filename Text'] = w.LabelInput(
                 ScienceDetails, "Filename Text",
                 field_spec=fields['filename_text'],
                 label_args={'style':'ScienceDetails.TLabel'})
-        self.inputs['Filename Text'].grid(row=0, column=2)
+        self.inputs['Filename Text'].grid(row=0, column=1)
 
         #Line 2
         self.inputs['Use FITS Header'] = w.LabelInput(
@@ -1586,17 +1566,11 @@ class ScienceDetailsConfigurationForm(tk.Frame):
         self.inputs['Update FITS Header'].grid(row=2, column=0, columnspan=3)
 
         # Line 4
-        self.inputs['FITS Header Filter'] = w.LabelInput(
-                ScienceDetails, "FITS Header Filter",
-                field_spec=fields['fits_header_filter'],
-                label_args={'style':'ScienceDetails.TLabel'})
-        self.inputs['FITS Header Filter'].grid(row=3, column=0)
-
         self.inputs['Filename Filter Text'] = w.LabelInput(
                 ScienceDetails, "Filename Filter Text",
                 field_spec=fields['filename_text_filter'],
                 label_args={'style':'ScienceDetails.TLabel'})
-        self.inputs['Filename Filter Text'].grid(row=3, column=1)
+        self.inputs['Filename Filter Text'].grid(row=3, column=0)
 
         #Line 5
         self.inputs['Use FITS Header Filter'] = w.LabelInput(
@@ -1650,13 +1624,11 @@ class ScienceDetailsConfigurationForm(tk.Frame):
     def populate_form(self,fields):
         """ Populate Form"""
         
-        self.inputs['FITS Header Image'].set(fields['fits_header_image'])
         self.inputs['FITS Header Value'].set(fields['fits_header_image_value'])
         self.inputs['Filename Text'].set(fields['filename_text'])
         self.inputs['Use FITS Header'].set(fields.as_bool('use_fits'))
         self.inputs['Use Filename'].set(fields.as_bool('use_filename'))
         self.inputs['Update FITS Header'].set(fields.as_bool('update_fits'))
-        self.inputs['FITS Header Filter'].set(fields['fits_header_filter'])
         self.inputs['Filename Filter Text'].set(fields['filename_text_filter'])
         self.inputs['Use FITS Header Filter'].set(fields.as_bool('use_fits_filter'))
         self.inputs['Use Filename Filter'].set(fields.as_bool('use_filename_filter'))
@@ -1665,13 +1637,11 @@ class ScienceDetailsConfigurationForm(tk.Frame):
     def save_form(self,fields):
         """ Save Form"""
 
-        fields['fits_header_image'] = self.inputs['FITS Header Image'].get()
         fields['fits_header_image_value'] = self.inputs['FITS Header Value'].get()
         fields['filename_text'] = self.inputs['Filename Text'].get()
         fields['use_fits'] = self.inputs['Use FITS Header'].get()
         fields['use_filename'] = self.inputs['Use Filename'].get()
         fields['update_fits'] = self.inputs['Update FITS Header'].get()
-        fields['fits_header_filter'] = self.inputs['FITS Header Filter'].get()
         fields['filename_text_filter'] = self.inputs['Filename Filter Text'].get()
         fields['use_fits_filter'] = self.inputs['Use FITS Header Filter'].get()
         fields['use_filename_filter'] = self.inputs['Use Filename Filter'].get()
@@ -1724,40 +1694,33 @@ class MasterDetailsConfigurationForm(tk.Frame):
                 field_spec=fields['filename_flat'],
                 label_args={'style':'MasterDetails.TLabel'})
         self.inputs['Filename Master Flat'].grid(row=0, column=2)
-       
-        # Line 2
-        self.inputs['FITS Header Image'] = w.LabelInput(
-                MasterDetails, "FITS Header Image",
-                field_spec=fields['fits_header_image'],
-                label_args={'style':'MasterDetails.TLabel'})
-        self.inputs['FITS Header Image'].grid(row=1, column=0)
 
-        # Line 3
+        # Line 2
         self.inputs['FITS Header Image Value Bias'] = w.LabelInput(
                 MasterDetails, "FITS Header Image Value Bias",
                 field_spec=fields['fits_header_image_value_bias'],
                 label_args={'style':'MasterDetails.TLabel'})
-        self.inputs['FITS Header Image Value Bias'].grid(row=2, column=0)
+        self.inputs['FITS Header Image Value Bias'].grid(row=1, column=0)
 
         self.inputs['FITS Header Image Value Dark'] = w.LabelInput(
                 MasterDetails, "FITS Header Image Value Dark",
                 field_spec=fields['fits_header_image_value_dark'],
                 label_args={'style':'MasterDetails.TLabel'})
-        self.inputs['FITS Header Image Value Dark'].grid(row=2, column=1)
+        self.inputs['FITS Header Image Value Dark'].grid(row=1, column=1)
 
         self.inputs['FITS Header Image Value Flat'] = w.LabelInput(
                 MasterDetails, "FITS Header Image Value Flat",
                 field_spec=fields['fits_header_image_value_flat'],
                 label_args={'style':'MasterDetails.TLabel'})
-        self.inputs['FITS Header Image Value Flat'].grid(row=2, column=2)
+        self.inputs['FITS Header Image Value Flat'].grid(row=1, column=2)
 
-        #Line 4
+        #Line 3
         self.inputs['Update FITS Header'] = w.LabelInput(
                 MasterDetails, "Update FITS Header",
                 field_spec=fields['update_fits'],
                 label_args={'style':'MasterDetails.TLabel'},
                 input_args={'style':'MasterDetails.TCheckbutton'})
-        self.inputs['Update FITS Header'].grid(row=3, column=0, columnspan=3)
+        self.inputs['Update FITS Header'].grid(row=2, column=0, columnspan=3)
         
         MasterDetails.grid(row=0, column=0, sticky=tk.W + tk.E)
  
@@ -1791,7 +1754,6 @@ class MasterDetailsConfigurationForm(tk.Frame):
         self.inputs['Filename Master Bias'].set(fields['filename_bias'])
         self.inputs['Filename Master Dark'].set(fields['filename_dark'])
         self.inputs['Filename Master Flat'].set(fields['filename_flat'])
-        self.inputs['FITS Header Image'].set(fields['fits_header_image'])
         self.inputs['FITS Header Image Value Bias'].set(fields['fits_header_image_value_bias'])
         self.inputs['FITS Header Image Value Dark'].set(fields['fits_header_image_value_dark'])
         self.inputs['FITS Header Image Value Flat'].set(fields['fits_header_image_value_flat'])
@@ -1803,7 +1765,6 @@ class MasterDetailsConfigurationForm(tk.Frame):
         fields['filename_bias'] = self.inputs['Filename Master Bias'].get()
         fields['filename_dark'] = self.inputs['Filename Master Dark'].get()
         fields['filename_flat'] = self.inputs['Filename Master Flat'].get()
-        fields['fits_header_image'] = self.inputs['FITS Header Image'].get()
         fields['fits_header_image_value_bias'] = self.inputs['FITS Header Image Value Bias'].get()
         fields['fits_header_image_value_dark'] = self.inputs['FITS Header Image Value Dark'].get()
         fields['fits_header_image_value_flat'] = self.inputs['FITS Header Image Value Flat'].get()
@@ -1846,92 +1807,47 @@ class ReducedDetailsConfigurationForm(tk.Frame):
         self.inputs['Filename Bias Stub'].grid(row=0, column=0)
 
         # Line 2
-        self.inputs['Filename Bias Prefix'] = w.LabelInput(
-                ReductionDetails, "Filename Bias Prefix",
-                field_spec=fields['filename_bias_prefix'],
-                label_args={'style':'ReductionDetails.TLabel'},
-                input_args={'style':'ReductionDetails.TCheckbutton'})
-        self.inputs['Filename Bias Prefix'].grid(row=1, column=0, columnspan=1)
-
-        self.inputs['Filename Bias Suffix'] = w.LabelInput(
-                ReductionDetails, "Filename Bias Suffix",
-                field_spec=fields['filename_bias_suffix'],
-                label_args={'style':'ReductionDetails.TLabel'},
-                input_args={'style':'ReductionDetails.TCheckbutton'})
-        self.inputs['Filename Bias Suffix'].grid(row=1, column=1, columnspan=1)
-
-        # Line 3
         self.inputs['Filename Dark Stub'] = w.LabelInput(
                 ReductionDetails, "Filename Master Dark",
                 field_spec=fields['filename_dark_stub'],
                 label_args={'style':'ReductionDetails.TLabel'})
-        self.inputs['Filename Dark Stub'].grid(row=2, column=0)
+        self.inputs['Filename Dark Stub'].grid(row=1, column=0)
 
-        # Line 4
-        self.inputs['Filename Dark Prefix'] = w.LabelInput(
-                ReductionDetails, "Filename Dark Prefix",
-                field_spec=fields['filename_dark_prefix'],
-                label_args={'style':'ReductionDetails.TLabel'},
-                input_args={'style':'ReductionDetails.TCheckbutton'})
-        self.inputs['Filename Dark Prefix'].grid(row=3, column=0, columnspan=1)
-
-        self.inputs['Filename Dark Suffix'] = w.LabelInput(
-                ReductionDetails, "Filename Dark Suffix",
-                field_spec=fields['filename_dark_suffix'],
-                label_args={'style':'ReductionDetails.TLabel'},
-                input_args={'style':'ReductionDetails.TCheckbutton'})
-        self.inputs['Filename Dark Suffix'].grid(row=3, column=1, columnspan=1)
-
-        # Line 5
+        # Line 3
         self.inputs['Filename Flat Stub'] = w.LabelInput(
                 ReductionDetails, "Filename Master Flat",
                 field_spec=fields['filename_flat_stub'],
                 label_args={'style':'ReductionDetails.TLabel'})
-        self.inputs['Filename Flat Stub'].grid(row=4, column=0)
+        self.inputs['Filename Flat Stub'].grid(row=2, column=0)
 
-        # Line 6
-        self.inputs['Filename Flat Prefix'] = w.LabelInput(
-                ReductionDetails, "Filename Flat Prefix",
-                field_spec=fields['filename_flat_prefix'],
-                label_args={'style':'ReductionDetails.TLabel'},
-                input_args={'style':'ReductionDetails.TCheckbutton'})
-        self.inputs['Filename Flat Prefix'].grid(row=5, column=0, columnspan=1)
-
-        self.inputs['Filename Flat Suffix'] = w.LabelInput(
-                ReductionDetails, "Filename Flat Suffix",
-                field_spec=fields['filename_flat_suffix'],
-                label_args={'style':'ReductionDetails.TLabel'},
-                input_args={'style':'ReductionDetails.TCheckbutton'})
-        self.inputs['Filename Flat Suffix'].grid(row=5, column=1, columnspan=1)
-
-        # Line 7
+        # Line 4
         self.inputs['Filename Reduced Stub'] = w.LabelInput(
                 ReductionDetails, "Filename Master Reduced",
                 field_spec=fields['filename_reduced_stub'],
                 label_args={'style':'ReductionDetails.TLabel'})
-        self.inputs['Filename Reduced Stub'].grid(row=6, column=0)
+        self.inputs['Filename Reduced Stub'].grid(row=3, column=0)
 
-        # Line 8
-        self.inputs['Filename Reduced Prefix'] = w.LabelInput(
-                ReductionDetails, "Filename Reduced Prefix",
-                field_spec=fields['filename_reduced_prefix'],
-                label_args={'style':'ReductionDetails.TLabel'},
-                input_args={'style':'ReductionDetails.TCheckbutton'})
-        self.inputs['Filename Reduced Prefix'].grid(row=7, column=0, columnspan=1)
-
-        self.inputs['Filename Reduced Suffix'] = w.LabelInput(
-                ReductionDetails, "Filename Reduced Suffix",
-                field_spec=fields['filename_reduced_suffix'],
-                label_args={'style':'ReductionDetails.TLabel'},
-                input_args={'style':'ReductionDetails.TCheckbutton'})
-        self.inputs['Filename Reduced Suffix'].grid(row=7, column=1, columnspan=1)
-
-        # Line 9
+        # Line 5
         self.inputs['Filename Stub Modifier'] = w.LabelInput(
                 ReductionDetails, "Filename Stub Modifier",
                 field_spec=fields['filename_prefix_suffix_modifier'],
                 label_args={'style':'ReductionDetails.TLabel'})
-        self.inputs['Filename Stub Modifier'].grid(row=8, column=0)
+        self.inputs['Filename Stub Modifier'].grid(row=4, column=0)
+
+        # Line 6
+        self.inputs['Filename Modifier Prefix'] = w.LabelInput(
+                ReductionDetails, "Filename Modifier Prefix",
+                field_spec=fields['filename_stub_prefix'],
+                label_args={'style':'ReductionDetails.TLabel'},
+                input_args={'style':'ReductionDetails.TCheckbutton'})
+        self.inputs['Filename Modifier Prefix'].grid(row=5, column=0, columnspan=1)
+
+        self.inputs['Filename Modifier Suffix'] = w.LabelInput(
+                ReductionDetails, "Filename Modifier Suffix",
+                field_spec=fields['filename_stub_prefix'],
+                label_args={'style':'ReductionDetails.TLabel'},
+                input_args={'style':'ReductionDetails.TCheckbutton'})
+        self.inputs['Filename Modifier Suffix'].grid(row=5, column=1, columnspan=1)
 
         ReductionDetails.grid(row=0, column=0, sticky=tk.W + tk.E)
  
@@ -1963,35 +1879,23 @@ class ReducedDetailsConfigurationForm(tk.Frame):
         """ Populate Form"""
         
         self.inputs['Filename Bias Stub'].set(fields['filename_bias_stub'])
-        self.inputs['Filename Bias Prefix'].set(fields.as_bool('filename_bias_prefix'))
-        self.inputs['Filename Bias Suffix'].set(fields.as_bool('filename_bias_suffix'))
         self.inputs['Filename Dark Stub'].set(fields['filename_dark_stub'])
-        self.inputs['Filename Dark Prefix'].set(fields.as_bool('filename_dark_prefix'))
-        self.inputs['Filename Dark Suffix'].set(fields.as_bool('filename_dark_suffix'))
         self.inputs['Filename Flat Stub'].set(fields['filename_flat_stub'])
-        self.inputs['Filename Flat Prefix'].set(fields.as_bool('filename_flat_prefix'))
-        self.inputs['Filename Flat Suffix'].set(fields.as_bool('filename_flat_suffix'))
         self.inputs['Filename Reduced Stub'].set(fields['filename_reduced_stub'])
-        self.inputs['Filename Reduced Prefix'].set(fields.as_bool('filename_reduced_prefix'))
-        self.inputs['Filename Reduced Suffix'].set(fields.as_bool('filename_reduced_suffix'))
         self.inputs['Filename Stub Modifier'].set(fields['filename_prefix_suffix_modifier'])
+        self.inputs['Filename Modifier Prefix'].set(fields.as_bool('filename_stub_prefix'))
+        self.inputs['Filename Modifier Suffix'].set(fields.as_bool('filename_stub_prefix'))
 
     def save_form(self,fields):
         """ Save Form"""
 
         fields['filename_bias_stub'] = self.inputs['Filename Bias Stub'].get()
-        fields['filename_bias_prefix'] = self.inputs['Filename Bias Prefix'].get()
-        fields['filename_bias_suffix'] = self.inputs['Filename Bias Suffix'].get()
         fields['filename_dark_stub'] = self.inputs['Filename Dark Stub'].get()
-        fields['filename_dark_prefix'] = self.inputs['Filename Dark Prefix'].get()
-        fields['filename_dark_suffix'] = self.inputs['Filename Dark Suffix'].get()
         fields['filename_flat_stub'] = self.inputs['Filename Flat Stub'].get()
-        fields['filename_flat_prefix'] = self.inputs['Filename Flat Prefix'].get()
-        fields['filename_flat_suffix'] = self.inputs['Filename Flat Suffix'].get()
         fields['filename_reduced_stub'] = self.inputs['Filename Reduced Stub'].get()
-        fields['filename_reduced_prefix'] = self.inputs['Filename Reduced Prefix'].get()
-        fields['filename_reduced_suffix'] = self.inputs['Filename Reduced Suffix'].get()
         fields['filename_prefix_suffix_modifier'] = self.inputs['Filename Stub Modifier'].get()
+        fields['filename_stub_prefix'] = self.inputs['Filename Modifier Prefix'].get()
+        fields['filename_stub_prefix'] = self.inputs['Filename Modifier Suffix'].get()
 
         return fields
 

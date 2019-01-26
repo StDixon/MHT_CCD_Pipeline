@@ -1,5 +1,5 @@
 import platform
-import os
+import os, shutil
 from os import environ
 from datetime import datetime
 from pathlib import Path
@@ -466,12 +466,25 @@ class Application(tk.Tk):
     def create_collections(self):
         #create all collections
 
-        filemods = {}        
-        filemods['bias_removal_suffix'] = '_br'
-        filemods['dark_subtract_suffix'] = '_ds'
-        filemods['master_bias_name'] = 'master_bias'
-        filemods['master_dark_name'] = 'master_dark'
-        filemods['master_flat_name'] = 'master_flat'
+        filemods = {}
+        filemods['filename_mod_prefix'] = self.config_model.config['reduction_details'].as_bool('filename_stub_prefix')
+        filemods['filename_mod'] = self.config_model.config['reduction_details']['filename_prefix_suffix_modifier']
+        if filemods['filename_mod_prefix']:
+            filemods['bias_removal_mod'] = self.config_model.config['reduction_details']['filename_bias_stub'] + filemods['filename_mod']
+            filemods['dark_removal_mod'] = self.config_model.config['reduction_details']['filename_dark_stub'] + filemods['filename_mod']
+            filemods['flat_removal_mod'] = self.config_model.config['reduction_details']['filename_flat_stub'] + filemods['filename_mod']
+            filemods['reduced_removal_mod'] = self.config_model.config['reduction_details']['filename_reduced_stub'] + filemods['filename_mod']
+        else:
+            filemods['bias_removal_mod'] = filemods['filename_mod'] + self.config_model.config['reduction_details']['filename_bias_stub']
+            filemods['dark_removal_mod'] = filemods['filename_mod'] + self.config_model.config['reduction_details']['filename_dark_stub']
+            filemods['flat_removal_mod'] = filemods['filename_mod'] + self.config_model.config['reduction_details']['filename_flat_stub']
+            filemods['reduced_removal_mod'] = filemods['filename_mod'] + self.config_model.config['reduction_details']['filename_reduced_stub']
+
+        filemods['master_bias_name'] = self.config_model.config['master_details']['filename_bias']
+        filemods['master_dark_name'] = self.config_model.config['master_details']['filename_dark']
+        filemods['master_flat_name'] = self.config_model.config['master_details']['filename_flat']
+        filemods['save_masters'] = self.config_model.config['directories'].as_bool('save_masters')
+        filemods['save_working'] = self.config_model.config['directories'].as_bool('save_working')
 
         paths = {}
         paths['source_dir'] = self.config_model.config['directories']['source_dir']
@@ -494,14 +507,46 @@ class Application(tk.Tk):
                                 self.config_model.config['directories']['working_dir'],
                                 self.config_model.config['directories']['output_dir'])
 
-        #keywords = ("IMAGETYP", "FILTER", "OBJECT", "EXPOSURE", "EXPTIME", "CCDTEMP")
-        keywords = ("IMAGETYP", "FILTER", "OBJECT", "EXPTIME", "CCDTEMP")
+        keywords = (self.config_model.config['general_details']['fits_header_image_type'],
+                         self.config_model.config['general_details']['fits_header_filter'],
+                         self.config_model.config['general_details']['fits_header_CCD_temp'],
+                         self.config_model.config['general_details']['fits_header_exposure'],
+                         "OBJECT")
+
+        imagelist = (self.config_model.config['bias_details']['fits_header_image_value'],
+                        self.config_model.config['dark_details']['fits_header_image_value'],
+                        self.config_model.config['flat_details']['fits_header_image_value'],
+                        self.config_model.config['science_details']['fits_header_image_value'],
+                        )
         
-        self.collection = m.ImageCollection_Model(keywords,paths,filemods)
+        self.collection = m.ImageCollection_Model(keywords,paths,filemods,imagelist)
 
         directorylist = (paths['bias_dir'],paths['dark_dir'],paths['flat_dir'],paths['science_dir'],paths['master_dir'],paths['output_dir'])
 
         m.ImageCollection_Model.performreduction(self.collection,self.settings,directorylist)
+
+        print('Copy Results')
+        if filemods['save_working']:
+            temp = os.path.join(paths['source_dir'], self.config_model.config['directories']['working_dir'])
+            if os.path.isdir(temp):
+                shutil.rmtree(temp)
+            shutil.copytree(self.config_model.config['directories']['working_dir'],temp)
+        else:
+            temp = os.path.join(paths['source_dir'], paths['output_dir'])
+            if os.path.isdir(temp):
+                shutil.rmtree(temp)
+            shutil.copytree(paths['output_dir'],temp)
+
+            if filemods['save_masters']:
+                temp = os.path.join(paths['source_dir'], paths['master_dir'])
+                if os.path.isdir(temp):
+                    shutil.rmtree(temp)
+                shutil.copytree(paths['master_dir'],temp)
+
+        print('Delete Working')
+        if os.path.isdir(self.config_model.config['directories']['working_dir']):
+            shutil.rmtree(self.config_model.config['directories']['working_dir'])
+
 
     def set_font(self,*args):
         font_size = self.settings['font size'].get()

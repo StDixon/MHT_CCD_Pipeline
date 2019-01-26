@@ -112,12 +112,13 @@ class Configuration_Model:
     }
 
     general_details = {
+        'fits_header_image_type': {'req': True,'type':FT.string,'value': 'IMAGETYP'},
+        'fits_header_filter': {'req': True,'type':FT.string,'value': 'FILTER'},
         'fits_header_CCD_Temp': {'req': True,'type':FT.string,'value': 'TEMP'},
         'fits_header_exposure': {'req': True,'type':FT.string,'value': 'EXPOSURE'},
     }
 
     bias_details = {
-        'fits_header_image': {'req': True,'type':FT.string,'value': 'IMAGETYP'},
         'fits_header_image_value': {'req': True,'type':FT.string,'value': 'Bias Frame'},
         'filename_text': {'req': True,'type':FT.string,'value': 'bias'},
         'use_fits': {'req': True,'type':FT.boolean,'value':'True'},
@@ -126,7 +127,6 @@ class Configuration_Model:
     }
 
     dark_details = {
-        'fits_header_image': {'req': True,'type':FT.string,'value': 'IMAGETYP'},
         'fits_header_image_value': {'req': True,'type':FT.string,'value': 'Dark Frame'},
         'filename_text': {'req': True,'type':FT.string,'value': 'dark'},
         'use_fits': {'req': True,'type':FT.boolean,'value':'True'},
@@ -135,13 +135,11 @@ class Configuration_Model:
     }
 
     flat_details = {
-        'fits_header_image': {'req': True,'type':FT.string,'value': 'IMAGETYP'},
         'fits_header_image_value': {'req': True,'type':FT.string,'value': 'Flat Frame'},
         'filename_text': {'req': True,'type':FT.string,'value': 'flat'},
         'use_fits': {'req': True,'type':FT.boolean,'value':'True'},
         'use_filename': {'req': True,'type':FT.boolean,'value':'False'},
         'update_fits': {'req': True,'type':FT.boolean,'value':'True'},
-        'fits_header_filter': {'req': True,'type':FT.string,'value': 'FILTER'},
         'filename_text_filter': {'req': True,'type':FT.string,'value': {'Ha','B','R','G'}},
         'use_fits_filter': {'req': True,'type':FT.boolean,'value':'True'},
         'use_filename_filter': {'req': True,'type':FT.boolean,'value':'False'},
@@ -149,13 +147,11 @@ class Configuration_Model:
     }
 
     science_details = {
-        'fits_header_image': {'req': True,'type':FT.string,'value': 'IMAGETYP'},
         'fits_header_image_value': {'req': True,'type':FT.string,'value': 'Light Frame'},
         'filename_text': {'req': True,'type':FT.string,'value': ''},
         'use_fits': {'req': True,'type':FT.boolean,'value':'True'},
         'use_filename': {'req': True,'type':FT.boolean,'value':'False'},
         'update_fits': {'req': True,'type':FT.boolean,'value':'True'},
-        'fits_header_filter': {'req': True,'type':FT.string,'value': 'FILTER'},
         'filename_text_filter': {'req': True,'type':FT.string,'value': {'Ha','B','R','G'}},
         'use_fits_filter': {'req': True,'type':FT.boolean,'value':'True'},
         'use_filename_filter': {'req': True,'type':FT.boolean,'value':'False'},
@@ -166,7 +162,6 @@ class Configuration_Model:
         'filename_bias': {'req': True,'type':FT.string,'value':'master_bias'},
         'filename_dark': {'req': True,'type':FT.string,'value':'master_dark'},
         'filename_flat': {'req': True,'type':FT.string,'value':'master_flat'},
-        'fits_header_image': {'req': True,'type':FT.string,'value': 'IMAGETYP'},
         'fits_header_image_value_bias': {'req': True,'type':FT.string,'value': 'Master Bias'},
         'fits_header_image_value_dark': {'req': True,'type':FT.string,'value': 'Master Dark'},
         'fits_header_image_value_flat': {'req': True,'type':FT.string,'value': 'Master Flat'},
@@ -175,17 +170,10 @@ class Configuration_Model:
 
     reduction_details = {
         'filename_bias_stub': {'req': True,'type':FT.string,'value':'br'},
-        'filename_bias_prefix': {'req': True,'type':FT.boolean,'value':'False'},
-        'filename_bias_suffix': {'req': True,'type':FT.boolean,'value':'True'},
         'filename_dark_stub': {'req': True,'type':FT.string,'value':'ds'},
-        'filename_dark_prefix': {'req': True,'type':FT.boolean,'value':'False'},
-        'filename_dark_suffix': {'req': True,'type':FT.boolean,'value':'True'},
         'filename_flat_stub': {'req': True,'type':FT.string,'value':'fr'},
-        'filename_flat_prefix': {'req': True,'type':FT.boolean,'value':'False'},
-        'filename_flat_suffix': {'req': True,'type':FT.boolean,'value':'True'},
         'filename_reduced_stub': {'req': True,'type':FT.string,'value':'reduced'},
-        'filename_reduced_prefix': {'req': True,'type':FT.boolean,'value':'False'},
-        'filename_reduced_suffix': {'req': True,'type':FT.boolean,'value':'True'},
+        'filename_stub_prefix': {'req': True,'type':FT.boolean,'value':'False'},
         'filename_prefix_suffix_modifier': {'req': True,'type':FT.string,'value':'_'},
     }
 
@@ -226,16 +214,13 @@ class Configuration_Model:
 class ImageCollection_Model():
     """Image collection model"""
 
-    def __init__(self,keywords,paths,filemods):
+    def __init__(self,keywords,paths,filemods,image_list):
         
-        #directoryList use paths
-
-        #check directories exist here
-      
         self.paths = paths
         self.filemods = filemods
         self.keywords = keywords
-
+        self.imagelist = image_list
+        
         self.ic = ImageFileCollection(self.paths['source_dir'],keywords)
         self.table = self.ic.summary
 
@@ -245,15 +230,10 @@ class ImageCollection_Model():
             list = np.unique(self.table[key].data).tolist()
             self.stats[key]=list
 
-        self.image_bias = 'Bias Frame'
-        self.image_dark = 'Dark Frame'
-        self.image_flat = 'Flat Field'
-        self.image_science = 'Light Frame'
-
-        bias_keys = {'IMAGETYP': self.image_bias}
-        dark_keys =  {'IMAGETYP': self.image_dark}
-        flat_keys =  {'IMAGETYP': self.image_flat}
-        science_keys =  {'IMAGETYP': self.image_science}
+        bias_keys = {self.keywords[0]: self.imagelist[0]}
+        dark_keys =  {self.keywords[0]: self.imagelist[1]}
+        flat_keys =  {self.keywords[0]: self.imagelist[2]}
+        science_keys =  {self.keywords[0]: self.imagelist[3]}
 
         self.bias_names = self.fileNames(self.ic,bias_keys)
         self.bias_names_full = self.fileNames(self.ic,bias_keys,include_path=True)
@@ -261,17 +241,9 @@ class ImageCollection_Model():
         self.flat_names = self.fileNames(self.ic,flat_keys)
         self.science_names = self.fileNames(self.ic,science_keys)
 
-        self.imagelist = (self.image_bias, self.image_dark, self.image_flat, self.image_science)
-
-        self.bias_removal_suffix = '_br'
-        self.dark_subtract_suffix = '_ds'
-        self.master_bias_name = 'master_bias'
-        self.master_dark_name = 'master_dark'
-        self.master_flat_name = 'master_flat'
-
-    def createWorkingDirectories(self,directories):
+    def createWorkingDirectories(self):
         """Create Image Directories"""
-        for dir in directories:
+        for dir in self.directorylist:
             if not os.path.exists(dir):
                 os.makedirs(dir)
 
@@ -286,7 +258,7 @@ class ImageCollection_Model():
             with fits.open(src_file) as hdul:
                 hdr = hdul[0].header
                 try:
-                    image = hdr['IMAGETYP']
+                    image = hdr[self.imagelist[0]]
                     if image == image_type:
                         try:
                             shutil.move(src_file,dest_dir)
@@ -294,7 +266,7 @@ class ImageCollection_Model():
                             print("file error")
                             os.remove(src_file)    
                 except KeyError:
-                    print("No IMAGETYP in Header")
+                    print("No %s in Header",self.imagelist[0])
         
     def splitFilters(self,source_dir):
         for file in os.listdir(source_dir):
@@ -303,7 +275,7 @@ class ImageCollection_Model():
                 with fits.open(src_file) as hdul:
                     hdr = hdul[0].header
                     try:
-                        filtertype = hdr['FILTER']
+                        filtertype = hdr[self.imagelist[1]]
                         dest_dir = os.path.join(source_dir,filtertype)
                         if not os.path.exists(dest_dir):
                             os.makedirs(dest_dir)
@@ -313,17 +285,17 @@ class ImageCollection_Model():
                             print("file error")
                             os.remove(src_file)
                     except KeyError:
-                        print("No FILTER in Header")
+                        print("No %s in Header",self.imagelist[1])
 
-    def copyImageTypes(self,ImageCollection,directory_list,image_list):
+    def copyImageTypes(self):
         images = 0
-        while images < len(image_list):
-            self.copyImageType(ImageCollection,directory_list[images],image_list[images])
+        while images < len(self.imagelist):
+            self.copyImageType(self.directorylist[images],self.imagelist[images])
             images = images + 1
 
 
-    def copyImageType(self,ImageCollection,dest_dir,image_type):
-        for hdu in ImageCollection.hdus(save_location=dest_dir, imagetyp=image_type, overwrite=True):
+    def copyImageType(self,dest_dir,image_type):
+        for hdu in self.ic.hdus(save_location=dest_dir, imagetyp=image_type, overwrite=True):
             pass
 
     def fileNames(self,ImageCollection,keys,include_path= False):
@@ -386,7 +358,7 @@ class ImageCollection_Model():
         ccd = CCDData.read(master_file, unit = u.adu)
         dark_file = os.path.join(Dark_Directory,DarkFilename)
         master = CCDData.read(dark_file, unit = u.adu)
-        master_brds = ccdproc.subtract_dark(ccd=ccd,master=master,exposure_time='EXPTIME',exposure_unit=u.second,scale=True)
+        master_brds = ccdproc.subtract_dark(ccd=ccd,master=master,exposure_time=self.keywords[3],exposure_unit=u.second,scale=True)
         
         mbrds_file = os.path.join(Dest_Directory,DestFilename)
 
@@ -407,18 +379,13 @@ class ImageCollection_Model():
         """All steps to perform CCD reduction"""
 
         self.settings = settings
+        self.directorylist = directorylist
 
         print('Create Directories')
-        self.createWorkingDirectories(directorylist)
-
-        if True:
-            return
+        self.createWorkingDirectories()
 
         print('Copy Images')
-        self.copyImageTypes(self.ic,directorylist,self.imagelist)
-
-        if True:
-            return
+        self.copyImageTypes()
 
         print('Create Collections')
         bias_ic = ImageFileCollection(self.paths['bias_dir'], self.keywords)
@@ -430,8 +397,8 @@ class ImageCollection_Model():
 
         # check and handle empty table ie no FITS files so collection empty
 
-        flat_filters = np.unique(flat_table['FILTER'].data).tolist()
-        flat_exposures = np.unique(flat_table['EXPTIME'].data).tolist()
+        flat_filters = np.unique(flat_table[self.keywords[1]].data).tolist()
+        flat_exposures = np.unique(flat_table[self.keywords[3]].data).tolist()
 
         print('Flat Exposures')
         print(repr(flat_exposures))
@@ -439,7 +406,7 @@ class ImageCollection_Model():
         dark_ic = ImageFileCollection(self.paths['dark_dir'], self.keywords)
         dark_table = dark_ic.summary
 
-        dark_exposures = np.unique(dark_table['EXPTIME'].data).tolist()
+        dark_exposures = np.unique(dark_table[self.keywords[3]].data).tolist()
 
         print('Dark Exposures')
         print(repr(dark_exposures))
@@ -448,9 +415,9 @@ class ImageCollection_Model():
         science_table = science_ic.summary
 
         # need to handle 'None Type' in table
-        science_filters = np.unique(science_table['FILTER'].data).tolist()
-        science_objects = np.unique(science_table['OBJECT'].data).tolist()
-        science_exposures = np.unique(science_table['EXPTIME'].data).tolist()
+        science_filters = np.unique(science_table[self.keywords[1]].data).tolist()
+        science_objects = np.unique(science_table[self.keywords[4]].data).tolist()
+        science_exposures = np.unique(science_table[self.keywords[3]].data).tolist()
 
         print('Science Exposures')
         print(repr(science_exposures))
@@ -464,43 +431,59 @@ class ImageCollection_Model():
         self.copyExposures(dark_ic,self.paths['dark_dir'],dark_exposures)
 
         print('Create Master Bias')
-        self.createMasters(bias_ic,self.paths['master_dir'],self.master_bias_name+'.fit',self.image_bias,'')
+        self.createMasters(bias_ic,self.paths['master_dir'],self.filemods['master_bias_name'] + '.fit',self.imagelist[0],'')
 
         print('Create Master Darks')
-        self.createMasters(dark_ic,self.paths['master_dir'],self.master_dark_name+'.fit',self.image_dark,'')
+        self.createMasters(dark_ic,self.paths['master_dir'],self.filemods['master_dark_name'] + '.fit',self.imagelist[1],'')
 
         print('Create Master Flats')
         for filterType in flat_filters:
             print('Create Master Flat ' + filterType)
-            masterFile = self.master_flat_name + '_' + filterType + '.fit'
-            self.createMasters(flat_ic,self.paths['master_dir'],masterFile,self.image_flat,filterType)
+            masterFile = self.filemods['master_flat_name'] + '_' + filterType + '.fit'
+            self.createMasters(flat_ic,self.paths['master_dir'],masterFile,self.imagelist[2],filterType)
 
         print('Bias Removal')
         print('Bias Removal from Dark')
-        self.removeBias(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.master_bias_name+'.fit',self.master_dark_name+'.fit',self.master_dark_name + self.bias_removal_suffix +'.fit')
+        if self.filemods['filename_mod_prefix']:
+            self.removeBias(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.filemods['master_bias_name'] + '.fit',self.filemods['master_dark_name'] + '.fit',self.filemods['bias_removal_mod'] + self.filemods['master_dark_name'] + '.fit')
+        else:
+            self.removeBias(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.filemods['master_bias_name'] + '.fit',self.filemods['master_dark_name'] + '.fit',self.filemods['master_dark_name'] + self.filemods['bias_removal_mod'] +'.fit')
 
         print('Bias Removal from Flats')
         for filterType in flat_filters:
             print('Bias Removal from Flat ' + filterType)
-            masterFile = self.master_flat_name+'_' + filterType + '.fit'
-            masterFilebr = self.master_flat_name +'_' + filterType + self.bias_removal_suffix +'.fit'
-            self.removeBias(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.master_bias_name+'.fit',masterFile,masterFilebr)
+            masterFile = self.filemods['master_flat_name'] + '_' + filterType + '.fit'
+            if self.filemods['filename_mod_prefix']:
+                masterFilebr = self.filemods['bias_removal_mod'] + self.filemods['master_flat_name'] + '_' + filterType + '.fit'
+            else:
+                masterFilebr = self.filemods['master_flat_name'] + '_' + filterType + self.filemods['bias_removal_mod'] + '.fit'
+
+            self.removeBias(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.filemods['master_bias_name'] + '.fit',masterFile,masterFilebr)
 
         print('Dark Removal from Flats')
         for filterType in flat_filters:
             print('Dark Removal from Flat ' + filterType)
-            masterFilebr = self.master_flat_name +'_' + filterType + self.bias_removal_suffix +'.fit'
-            masterFilebrds = self.master_flat_name +'_' + filterType + self.bias_removal_suffix + self.dark_subtract_suffix + '.fit'
-            self.removeDark(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.master_dark_name + self.bias_removal_suffix +'.fit',masterFilebr,masterFilebrds)
-
+            if self.filemods['filename_mod_prefix']:
+                masterFilebr = self.filemods['bias_removal_mod'] + self.filemods['master_flat_name'] +'_' + filterType + '.fit'
+                masterFilebrds = self.filemods['dark_removal_mod'] + self.filemods['bias_removal_mod'] + self.filemods['master_flat_name'] +'_' + filterType + '.fit'
+                self.removeDark(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.filemods['bias_removal_mod'] + self.filemods['master_dark_name'] + '.fit',masterFilebr,masterFilebrds)
+            else:
+                masterFilebr = self.filemods['master_flat_name'] +'_' + filterType + self.filemods['bias_removal_mod'] +'.fit'
+                masterFilebrds = self.filemods['master_flat_name'] +'_' + filterType + self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + '.fit'
+                self.removeDark(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.filemods['master_dark_name'] + self.filemods['bias_removal_mod'] +'.fit',masterFilebr,masterFilebrds)
+               
         print('Reduce Science File')
 
         print('Remove Bias & Dark')
         for fname in science_ic.files:
             fname_noext = os.path.splitext(fname)[0]
             print(repr(fname_noext))
-            self.removeBias(self.paths['master_dir'],self.paths['science_dir'],self.paths['output_dir'],self.master_bias_name+'.fit',fname,fname_noext + self.bias_removal_suffix +'.fit')
-            self.removeDark(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.master_dark_name+ self.bias_removal_suffix +'.fit',fname_noext + self.bias_removal_suffix+'.fit',fname_noext + self.bias_removal_suffix+self.dark_subtract_suffix +'.fit')
+            if self.filemods['filename_mod_prefix']:
+                self.removeBias(self.paths['master_dir'],self.paths['science_dir'],self.paths['output_dir'],self.filemods['master_bias_name'] + '.fit',fname,self.filemods['bias_removal_mod'] + fname_noext + '.fit')
+                self.removeDark(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['bias_removal_mod'] + self.filemods['master_dark_name'] + '.fit',self.filemods['bias_removal_mod'] + fname_noext + '.fit',self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + fname_noext + '.fit')
+            else:
+                self.removeBias(self.paths['master_dir'],self.paths['science_dir'],self.paths['output_dir'],self.filemods['master_bias_name'] + '.fit',fname,fname_noext + self.filemods['bias_removal_mod'] + '.fit')
+                self.removeDark(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['master_dark_name'] + self.filemods['bias_removal_mod'] + '.fit',fname_noext + self.filemods['bias_removal_mod'] +'.fit',fname_noext + self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + '.fit')
 
         print('Flat Correction')
         for filterType in flat_filters:
@@ -508,5 +491,9 @@ class ImageCollection_Model():
             for fname in science_ic.files_filtered(filter=filterType):
                 fname_noext = os.path.splitext(fname)[0]
                 print(repr(fname_noext))
-                self.reduceFlat(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.master_flat_name+'_'+filterType+ self.bias_removal_suffix + self.dark_subtract_suffix+'.fit',fname_noext+self.bias_removal_suffix + self.dark_subtract_suffix +'.fit',fname_noext+'_red.fit')
+                if self.filemods['filename_mod_prefix']:
+                    self.reduceFlat(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['dark_removal_mod'] + self.filemods['bias_removal_mod'] + self.filemods['master_flat_name'] + '_' + filterType + '.fit',self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + fname_noext + '.fit',self.filemods['reduced_removal_mod'] + fname_noext + '.fit')
+                else:
+                    self.reduceFlat(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['master_flat_name'] + '_' + filterType + self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + '.fit',fname_noext + self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + '.fit',fname_noext + self.filemods['reduced_removal_mod'] + '.fit')
 
+        print('Reduction Complete')
