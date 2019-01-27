@@ -230,7 +230,6 @@ class CCDReductionForm(tk.Frame):
         for index, iid in enumerate(itemlist):
             treeview.move(iid,treeview.parent(iid),index)
 
-
 class ConfigurationForm(tk.Frame):
     """The configuration form"""
     
@@ -1153,6 +1152,7 @@ class BiasDetailsConfigurationForm(tk.Frame):
         
         style.configure('BiasDetails.TLabel',background='lightgreen')
         style.configure('BiasDetails.TCheckbutton',background='lightgreen')
+        style.configure('BiasDetails.TRadiobutton',background='lightgreen')
         
         # Bias Details
         BiasDetails = tk.LabelFrame(self, 
@@ -1177,18 +1177,25 @@ class BiasDetailsConfigurationForm(tk.Frame):
         self.inputs['Filename Text'].grid(row=0, column=1)
 
         #Line 2
+        self.use_fits_radiobutton = tk.StringVar()
         self.inputs['Use FITS Header'] = w.LabelInput(
                 BiasDetails, "Use FITS Header",
+                input_var=self.use_fits_radiobutton, 
                 field_spec=fields['use_fits'],
                 label_args={'style':'BiasDetails.TLabel'},
-                input_args={'style':'BiasDetails.TCheckbutton'})
+                input_args={'style':'BiasDetails.TRadiobutton',
+                                'variable':'self.use_fits_radiobutton',
+                                'value' : 'True'})
         self.inputs['Use FITS Header'].grid(row=1, column=0, columnspan=1)
 
         self.inputs['Use Filename'] = w.LabelInput(
                 BiasDetails, "Use Filename",
-                field_spec=fields['use_filename'],
+                input_var=self.use_fits_radiobutton, 
+                field_spec=fields['use_fits'],
                 label_args={'style':'BiasDetails.TLabel'},
-                input_args={'style':'BiasDetails.TCheckbutton'})
+                input_args={'style':'BiasDetails.TRadiobutton',
+                                'variable':'self.use_fits_radiobutton',
+                                'value' : 'False'})
         self.inputs['Use Filename'].grid(row=1, column=1, columnspan=1)
 
         #Line 3
@@ -1230,8 +1237,7 @@ class BiasDetailsConfigurationForm(tk.Frame):
         
         self.inputs['FITS Header Value'].set(fields['fits_header_image_value'])
         self.inputs['Filename Text'].set(fields['filename_text'])
-        self.inputs['Use FITS Header'].set(fields.as_bool('use_fits'))
-        self.inputs['Use Filename'].set(fields.as_bool('use_filename'))
+        self.inputs['Use FITS Header'].set(fields['use_fits'])
         self.inputs['Update FITS Header'].set(fields.as_bool('update_fits'))
 
     def save_form(self,fields):
@@ -1240,7 +1246,6 @@ class BiasDetailsConfigurationForm(tk.Frame):
         fields['fits_header_image_value'] = self.inputs['FITS Header Value'].get()
         fields['filename_text'] = self.inputs['Filename Text'].get()
         fields['use_fits'] = self.inputs['Use FITS Header'].get()
-        fields['use_filename'] = self.inputs['Use Filename'].get()
         fields['update_fits'] = self.inputs['Update FITS Header'].get()
 
         return fields
@@ -1263,6 +1268,7 @@ class DarkDetailsConfigurationForm(tk.Frame):
         
         style.configure('DarkDetails.TLabel',background='lightgreen')
         style.configure('DarkDetails.TCheckbutton',background='lightgreen')
+        style.configure('DarkDetails.TRadiobutton',background='lightgreen')
         
         # Dark Details
         DarkDetails = tk.LabelFrame(self, 
@@ -1286,18 +1292,25 @@ class DarkDetailsConfigurationForm(tk.Frame):
         self.inputs['Filename Text'].grid(row=0, column=1)
 
         #Line 2
+        self.use_fits_radiobutton = tk.StringVar()
         self.inputs['Use FITS Header'] = w.LabelInput(
                 DarkDetails, "Use FITS Header",
+                input_var=self.use_fits_radiobutton, 
                 field_spec=fields['use_fits'],
                 label_args={'style':'DarkDetails.TLabel'},
-                input_args={'style':'DarkDetails.TCheckbutton'})
+                input_args={'style':'DarkDetails.TRadiobutton',
+                                'variable':'self.use_fits_radiobutton',
+                                'value' : 'True'})
         self.inputs['Use FITS Header'].grid(row=1, column=0, columnspan=1)
 
         self.inputs['Use Filename'] = w.LabelInput(
                 DarkDetails, "Use Filename",
-                field_spec=fields['use_filename'],
+                input_var=self.use_fits_radiobutton, 
+                field_spec=fields['use_fits'],
                 label_args={'style':'DarkDetails.TLabel'},
-                input_args={'style':'DarkDetails.TCheckbutton'})
+                input_args={'style':'DarkDetails.TRadiobutton',
+                                'variable':'self.use_fits_radiobutton',
+                                'value' : 'False'})
         self.inputs['Use Filename'].grid(row=1, column=1, columnspan=1)
 
         #Line 3
@@ -1340,8 +1353,7 @@ class DarkDetailsConfigurationForm(tk.Frame):
         
         self.inputs['FITS Header Value'].set(fields['fits_header_image_value'])
         self.inputs['Filename Text'].set(fields['filename_text'])
-        self.inputs['Use FITS Header'].set(fields.as_bool('use_fits'))
-        self.inputs['Use Filename'].set(fields.as_bool('use_filename'))
+        self.inputs['Use FITS Header'].set(fields['use_fits'])
         self.inputs['Update FITS Header'].set(fields.as_bool('update_fits'))
 
     def save_form(self,fields):
@@ -1350,7 +1362,6 @@ class DarkDetailsConfigurationForm(tk.Frame):
         fields['fits_header_image_value'] = self.inputs['FITS Header Value'].get()
         fields['filename_text'] = self.inputs['Filename Text'].get()
         fields['use_fits'] = self.inputs['Use FITS Header'].get()
-        fields['use_filename'] = self.inputs['Use Filename'].get()
         fields['update_fits'] = self.inputs['Update FITS Header'].get()
 
         return fields
@@ -1373,6 +1384,7 @@ class FlatDetailsConfigurationForm(tk.Frame):
         
         style.configure('FlatDetails.TLabel',background='lightgreen')
         style.configure('FlatDetails.TCheckbutton',background='lightgreen')
+        style.configure('FlatDetails.TRadiobutton',background='lightgreen')
         
         # Flat Details
         FlatDetails = tk.LabelFrame(self, 
@@ -1396,18 +1408,25 @@ class FlatDetailsConfigurationForm(tk.Frame):
         self.inputs['Filename Text'].grid(row=0, column=1)
 
         #Line 2
+        self.use_fits_radiobutton = tk.StringVar()
         self.inputs['Use FITS Header'] = w.LabelInput(
                 FlatDetails, "Use FITS Header",
+                input_var=self.use_fits_radiobutton, 
                 field_spec=fields['use_fits'],
                 label_args={'style':'FlatDetails.TLabel'},
-                input_args={'style':'FlatDetails.TCheckbutton'})
+                input_args={'style':'FlatDetails.TRadiobutton',
+                                'variable':'self.use_fits_radiobutton',
+                                'value' : 'True'})
         self.inputs['Use FITS Header'].grid(row=1, column=0, columnspan=1)
 
         self.inputs['Use Filename'] = w.LabelInput(
                 FlatDetails, "Use Filename",
-                field_spec=fields['use_filename'],
+                input_var=self.use_fits_radiobutton, 
+                field_spec=fields['use_fits'],
                 label_args={'style':'FlatDetails.TLabel'},
-                input_args={'style':'FlatDetails.TCheckbutton'})
+                input_args={'style':'FlatDetails.TRadiobutton',
+                                'variable':'self.use_fits_radiobutton',
+                                'value' : 'False'})
         self.inputs['Use Filename'].grid(row=1, column=1, columnspan=1)
 
         #Line 3
@@ -1426,18 +1445,25 @@ class FlatDetailsConfigurationForm(tk.Frame):
         self.inputs['Filename Filter Text'].grid(row=3, column=0)
 
         #Line 5
+        self.use_fits_filter_radiobutton = tk.StringVar()
         self.inputs['Use FITS Header Filter'] = w.LabelInput(
                 FlatDetails, "Use FITS Header Filter",
+                input_var=self.use_fits_filter_radiobutton, 
                 field_spec=fields['use_fits_filter'],
                 label_args={'style':'FlatDetails.TLabel'},
-                input_args={'style':'FlatDetails.TCheckbutton'})
+                input_args={'style':'FlatDetails.TRadiobutton',
+                                'variable':'self.use_fits_filter_radiobutton',
+                                'value' : 'True'})
         self.inputs['Use FITS Header Filter'].grid(row=4, column=0, columnspan=1)
 
         self.inputs['Use Filename Filter'] = w.LabelInput(
                 FlatDetails, "Use Filename Filter",
-                field_spec=fields['use_filename_filter'],
+                input_var=self.use_fits_filter_radiobutton, 
+                field_spec=fields['use_fits_filter'],
                 label_args={'style':'FlatDetails.TLabel'},
-                input_args={'style':'FlatDetails.TCheckbutton'})
+                input_args={'style':'FlatDetails.TRadiobutton',
+                                'variable':'self.use_fits_filter_radiobutton',
+                                'value' : 'False'})
         self.inputs['Use Filename Filter'].grid(row=4, column=1, columnspan=1)
 
         #Line 6
@@ -1479,12 +1505,10 @@ class FlatDetailsConfigurationForm(tk.Frame):
         
         self.inputs['FITS Header Value'].set(fields['fits_header_image_value'])
         self.inputs['Filename Text'].set(fields['filename_text'])
-        self.inputs['Use FITS Header'].set(fields.as_bool('use_fits'))
-        self.inputs['Use Filename'].set(fields.as_bool('use_filename'))
+        self.inputs['Use FITS Header'].set(fields['use_fits'])
         self.inputs['Update FITS Header'].set(fields.as_bool('update_fits'))
         self.inputs['Filename Filter Text'].set(fields['filename_text_filter'])
-        self.inputs['Use FITS Header Filter'].set(fields.as_bool('use_fits_filter'))
-        self.inputs['Use Filename Filter'].set(fields.as_bool('use_filename_filter'))
+        self.inputs['Use FITS Header Filter'].set(fields['use_fits_filter'])
         self.inputs['Update FITS Header Filter'].set(fields.as_bool('update_fits_filter'))
 
     def save_form(self,fields):
@@ -1493,11 +1517,9 @@ class FlatDetailsConfigurationForm(tk.Frame):
         fields['fits_header_image_value'] = self.inputs['FITS Header Value'].get()
         fields['filename_text'] = self.inputs['Filename Text'].get()
         fields['use_fits'] = self.inputs['Use FITS Header'].get()
-        fields['use_filename'] = self.inputs['Use Filename'].get()
         fields['update_fits'] = self.inputs['Update FITS Header'].get()
         fields['filename_text_filter'] = self.inputs['Filename Filter Text'].get()
         fields['use_fits_filter'] = self.inputs['Use FITS Header Filter'].get()
-        fields['use_filename_filter'] = self.inputs['Use Filename Filter'].get()
         fields['update_fits_filter'] = self.inputs['Update FITS Header Filter'].get()
 
         return fields
@@ -1520,6 +1542,7 @@ class ScienceDetailsConfigurationForm(tk.Frame):
         
         style.configure('ScienceDetails.TLabel',background='lightgreen')
         style.configure('ScienceDetails.TCheckbutton',background='lightgreen')
+        style.configure('ScienceDetails.TRadiobutton',background='lightgreen')
         
         # Science Details
         ScienceDetails = tk.LabelFrame(self, 
@@ -1543,18 +1566,25 @@ class ScienceDetailsConfigurationForm(tk.Frame):
         self.inputs['Filename Text'].grid(row=0, column=1)
 
         #Line 2
+        self.use_fits_radiobutton = tk.StringVar()
         self.inputs['Use FITS Header'] = w.LabelInput(
                 ScienceDetails, "Use FITS Header",
+                input_var=self.use_fits_radiobutton, 
                 field_spec=fields['use_fits'],
                 label_args={'style':'ScienceDetails.TLabel'},
-                input_args={'style':'ScienceDetails.TCheckbutton'})
+                input_args={'style':'ScienceDetails.TRadiobutton',
+                                'variable':'self.use_fits_radiobutton',
+                                'value' : 'True'})
         self.inputs['Use FITS Header'].grid(row=1, column=0, columnspan=1)
 
         self.inputs['Use Filename'] = w.LabelInput(
                 ScienceDetails, "Use Filename",
-                field_spec=fields['use_filename'],
+                input_var=self.use_fits_radiobutton, 
+                field_spec=fields['use_fits'],
                 label_args={'style':'ScienceDetails.TLabel'},
-                input_args={'style':'ScienceDetails.TCheckbutton'})
+                input_args={'style':'ScienceDetails.TRadiobutton',
+                                'variable':'self.use_fits_radiobutton',
+                                'value' : 'False'})
         self.inputs['Use Filename'].grid(row=1, column=1, columnspan=1)
 
         #Line 3
@@ -1573,18 +1603,25 @@ class ScienceDetailsConfigurationForm(tk.Frame):
         self.inputs['Filename Filter Text'].grid(row=3, column=0)
 
         #Line 5
+        self.use_fits_filter_radiobutton = tk.StringVar()
         self.inputs['Use FITS Header Filter'] = w.LabelInput(
                 ScienceDetails, "Use FITS Header Filter",
+                input_var=self.use_fits_filter_radiobutton, 
                 field_spec=fields['use_fits_filter'],
                 label_args={'style':'ScienceDetails.TLabel'},
-                input_args={'style':'ScienceDetails.TCheckbutton'})
+                input_args={'style':'ScienceDetails.TRadiobutton',
+                                'variable':'self.use_fits_filter_radiobutton',
+                                'value' : 'True'})
         self.inputs['Use FITS Header Filter'].grid(row=4, column=0, columnspan=1)
 
         self.inputs['Use Filename Filter'] = w.LabelInput(
                 ScienceDetails, "Use Filename Filter",
-                field_spec=fields['use_filename_filter'],
+                input_var=self.use_fits_filter_radiobutton, 
+                field_spec=fields['use_fits_filter'],
                 label_args={'style':'ScienceDetails.TLabel'},
-                input_args={'style':'ScienceDetails.TCheckbutton'})
+                input_args={'style':'ScienceDetails.TRadiobutton',
+                                'variable':'self.use_fits_filter_radiobutton',
+                                'value' : 'False'})
         self.inputs['Use Filename Filter'].grid(row=4, column=1, columnspan=1)
 
         #Line 6
@@ -1626,12 +1663,10 @@ class ScienceDetailsConfigurationForm(tk.Frame):
         
         self.inputs['FITS Header Value'].set(fields['fits_header_image_value'])
         self.inputs['Filename Text'].set(fields['filename_text'])
-        self.inputs['Use FITS Header'].set(fields.as_bool('use_fits'))
-        self.inputs['Use Filename'].set(fields.as_bool('use_filename'))
+        self.inputs['Use FITS Header'].set(fields['use_fits'])
         self.inputs['Update FITS Header'].set(fields.as_bool('update_fits'))
         self.inputs['Filename Filter Text'].set(fields['filename_text_filter'])
-        self.inputs['Use FITS Header Filter'].set(fields.as_bool('use_fits_filter'))
-        self.inputs['Use Filename Filter'].set(fields.as_bool('use_filename_filter'))
+        self.inputs['Use FITS Header Filter'].set(fields['use_fits_filter'])
         self.inputs['Update FITS Header Filter'].set(fields.as_bool('update_fits_filter'))
 
     def save_form(self,fields):
@@ -1640,11 +1675,9 @@ class ScienceDetailsConfigurationForm(tk.Frame):
         fields['fits_header_image_value'] = self.inputs['FITS Header Value'].get()
         fields['filename_text'] = self.inputs['Filename Text'].get()
         fields['use_fits'] = self.inputs['Use FITS Header'].get()
-        fields['use_filename'] = self.inputs['Use Filename'].get()
         fields['update_fits'] = self.inputs['Update FITS Header'].get()
         fields['filename_text_filter'] = self.inputs['Filename Filter Text'].get()
         fields['use_fits_filter'] = self.inputs['Use FITS Header Filter'].get()
-        fields['use_filename_filter'] = self.inputs['Use Filename Filter'].get()
         fields['update_fits_filter'] = self.inputs['Update FITS Header Filter'].get()
 
         return fields
@@ -1843,7 +1876,7 @@ class ReducedDetailsConfigurationForm(tk.Frame):
                 field_spec=fields['filename_stub_prefix'],
                 label_args={'style':'ReductionDetails.TLabel'},
                 input_args={'style':'ReductionDetails.TRadiobutton',
-                                'variable':'radiobutton',
+                                'variable':'self.filename_stub_prefix_radiobutton',
                                 'value':'True'})
         self.inputs['Filename Modifier Prefix'].grid(row=5, column=0, columnspan=1)
 
@@ -1853,7 +1886,7 @@ class ReducedDetailsConfigurationForm(tk.Frame):
                 field_spec=fields['filename_stub_prefix'],
                 label_args={'style':'ReductionDetails.TLabel'},
                 input_args={'style':'ReductionDetails.TRadiobutton',
-                                'variable':'radiobutton',
+                                'variable':'self.filename_stub_prefix_radiobutton',
                                 'value':'False'})
         self.inputs['Filename Modifier Suffix'].grid(row=5, column=1, columnspan=1)
 
@@ -1891,12 +1924,7 @@ class ReducedDetailsConfigurationForm(tk.Frame):
         self.inputs['Filename Flat Stub'].set(fields['filename_flat_stub'])
         self.inputs['Filename Reduced Stub'].set(fields['filename_reduced_stub'])
         self.inputs['Filename Stub Modifier'].set(fields['filename_prefix_suffix_modifier'])
-
-        self.filename_stub_prefix_radiobutton = fields['filename_stub_prefix']
-        if self.filename_stub_prefix_radiobutton == 'True':
-            self.inputs['Filename Modifier Prefix'].input.invoke()
-        else:
-            self.inputs['Filename Modifier Suffix'].input.invoke()
+        self.inputs['Filename Modifier Prefix'].set(fields['filename_stub_prefix'])
 
     def save_form(self,fields):
         """ Save Form"""

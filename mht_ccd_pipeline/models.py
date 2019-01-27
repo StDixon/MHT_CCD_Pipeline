@@ -121,40 +121,34 @@ class Configuration_Model:
     bias_details = {
         'fits_header_image_value': {'req': True,'type':FT.string,'value': 'Bias Frame'},
         'filename_text': {'req': True,'type':FT.string,'value': 'bias'},
-        'use_fits': {'req': True,'type':FT.boolean,'value':'True'},
-        'use_filename': {'req': True,'type':FT.boolean,'value':'False'},
+        'use_fits': {'req': False,'type':FT.rstring,'value':'True'},
         'update_fits': {'req': True,'type':FT.boolean,'value':'True'},
     }
 
     dark_details = {
         'fits_header_image_value': {'req': True,'type':FT.string,'value': 'Dark Frame'},
         'filename_text': {'req': True,'type':FT.string,'value': 'dark'},
-        'use_fits': {'req': True,'type':FT.boolean,'value':'True'},
-        'use_filename': {'req': True,'type':FT.boolean,'value':'False'},
+        'use_fits': {'req': False,'type':FT.rstring,'value':'True'},
         'update_fits': {'req': True,'type':FT.boolean,'value':'True'},
     }
 
     flat_details = {
         'fits_header_image_value': {'req': True,'type':FT.string,'value': 'Flat Frame'},
         'filename_text': {'req': True,'type':FT.string,'value': 'flat'},
-        'use_fits': {'req': True,'type':FT.boolean,'value':'True'},
-        'use_filename': {'req': True,'type':FT.boolean,'value':'False'},
+        'use_fits': {'req': False,'type':FT.rstring,'value':'True'},
         'update_fits': {'req': True,'type':FT.boolean,'value':'True'},
         'filename_text_filter': {'req': True,'type':FT.string,'value': {'Ha','B','R','G'}},
-        'use_fits_filter': {'req': True,'type':FT.boolean,'value':'True'},
-        'use_filename_filter': {'req': True,'type':FT.boolean,'value':'False'},
+        'use_fits_filter': {'req': False,'type':FT.rstring,'value':'True'},
         'update_fits_filter': {'req': True,'type':FT.boolean,'value':'True'},
     }
 
     science_details = {
         'fits_header_image_value': {'req': True,'type':FT.string,'value': 'Light Frame'},
         'filename_text': {'req': True,'type':FT.string,'value': ''},
-        'use_fits': {'req': True,'type':FT.boolean,'value':'True'},
-        'use_filename': {'req': True,'type':FT.boolean,'value':'False'},
+        'use_fits': {'req': False,'type':FT.rstring,'value':'True'},
         'update_fits': {'req': True,'type':FT.boolean,'value':'True'},
         'filename_text_filter': {'req': True,'type':FT.string,'value': {'Ha','B','R','G'}},
-        'use_fits_filter': {'req': True,'type':FT.boolean,'value':'True'},
-        'use_filename_filter': {'req': True,'type':FT.boolean,'value':'False'},
+        'use_fits_filter': {'req': False,'type':FT.rstring,'value':'True'},
         'update_fits_filter': {'req': True,'type':FT.boolean,'value':'True'},
     }
 
