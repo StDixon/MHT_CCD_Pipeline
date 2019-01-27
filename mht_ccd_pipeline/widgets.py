@@ -288,8 +288,8 @@ class LabelInput(tk.Frame):
         FT.decimal: (ValidatedSpinbox, tk.DoubleVar),
         FT.integer: (ValidatedSpinbox, tk.IntVar),
         FT.boolean: (ttk.Checkbutton, tk.BooleanVar),
-        FT.rboolean: (ttk.Radiobutton, tk.BooleanVar),
         FT.rinteger: (ttk.Radiobutton, tk.IntVar),
+        FT.rstring: (ttk.Radiobutton, tk.StringVar),
     }
 
     def __init__(self, parent, label='', input_class=None,
@@ -303,6 +303,7 @@ class LabelInput(tk.Frame):
             input_class = input_class or self.field_types.get(field_type)[0]
             var_type = self.field_types.get(field_type)[1]
             self.variable = input_var if input_var else var_type()
+
             # min, max, increment
             if 'min' in field_spec and 'from_' not in input_args:
                 input_args['from_'] = field_spec.get('min')
@@ -348,9 +349,9 @@ class LabelInput(tk.Frame):
 
     def set(self, value, *args, **kwargs):
         if type(self.variable) == tk.BooleanVar:
-                self.variable.set(bool(value))
+            self.variable.set(bool(value))
         elif self.variable:
-                self.variable.set(value, *args, **kwargs)
+            self.variable.set(value, *args, **kwargs)
         elif type(self.input).__name__.endswith('button'):
             if value:
                 self.input.select()

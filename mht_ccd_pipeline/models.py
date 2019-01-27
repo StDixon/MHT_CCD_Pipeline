@@ -173,7 +173,7 @@ class Configuration_Model:
         'filename_dark_stub': {'req': True,'type':FT.string,'value':'ds'},
         'filename_flat_stub': {'req': True,'type':FT.string,'value':'fr'},
         'filename_reduced_stub': {'req': True,'type':FT.string,'value':'reduced'},
-        'filename_stub_prefix': {'req': True,'type':FT.boolean,'value':'False'},
+        'filename_stub_prefix': {'req': False,'type':FT.rstring,'value':'False'},
         'filename_prefix_suffix_modifier': {'req': True,'type':FT.string,'value':'_'},
     }
 
@@ -480,7 +480,7 @@ class ImageCollection_Model():
             print(repr(fname_noext))
             if self.filemods['filename_mod_prefix']:
                 self.removeBias(self.paths['master_dir'],self.paths['science_dir'],self.paths['output_dir'],self.filemods['master_bias_name'] + '.fit',fname,self.filemods['bias_removal_mod'] + fname_noext + '.fit')
-                self.removeDark(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['bias_removal_mod'] + self.filemods['master_dark_name'] + '.fit',self.filemods['bias_removal_mod'] + fname_noext + '.fit',self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + fname_noext + '.fit')
+                self.removeDark(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['bias_removal_mod'] + self.filemods['master_dark_name'] + '.fit',self.filemods['bias_removal_mod'] + fname_noext + '.fit',self.filemods['dark_removal_mod'] + self.filemods['bias_removal_mod'] + fname_noext + '.fit')
             else:
                 self.removeBias(self.paths['master_dir'],self.paths['science_dir'],self.paths['output_dir'],self.filemods['master_bias_name'] + '.fit',fname,fname_noext + self.filemods['bias_removal_mod'] + '.fit')
                 self.removeDark(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['master_dark_name'] + self.filemods['bias_removal_mod'] + '.fit',fname_noext + self.filemods['bias_removal_mod'] +'.fit',fname_noext + self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + '.fit')
@@ -492,7 +492,7 @@ class ImageCollection_Model():
                 fname_noext = os.path.splitext(fname)[0]
                 print(repr(fname_noext))
                 if self.filemods['filename_mod_prefix']:
-                    self.reduceFlat(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['dark_removal_mod'] + self.filemods['bias_removal_mod'] + self.filemods['master_flat_name'] + '_' + filterType + '.fit',self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + fname_noext + '.fit',self.filemods['reduced_removal_mod'] + fname_noext + '.fit')
+                    self.reduceFlat(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['dark_removal_mod'] + self.filemods['bias_removal_mod'] + self.filemods['master_flat_name'] + '_' + filterType + '.fit',self.filemods['dark_removal_mod'] + self.filemods['bias_removal_mod'] + fname_noext + '.fit',self.filemods['reduced_removal_mod'] + fname_noext + '.fit')
                 else:
                     self.reduceFlat(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['master_flat_name'] + '_' + filterType + self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + '.fit',fname_noext + self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + '.fit',fname_noext + self.filemods['reduced_removal_mod'] + '.fit')
 

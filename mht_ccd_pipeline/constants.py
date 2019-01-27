@@ -6,5 +6,6 @@ class FieldTypes:
     decimal = 5
     integer = 6
     boolean = 7
-    rboolean = 8
-    rinteger = 9
+    rinteger = 8
+    rstring = 9
+

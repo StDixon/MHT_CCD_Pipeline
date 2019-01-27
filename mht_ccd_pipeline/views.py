@@ -1790,6 +1790,7 @@ class ReducedDetailsConfigurationForm(tk.Frame):
         
         style.configure('ReductionDetails.TLabel',background='lightgreen')
         style.configure('ReductionDetails.TCheckbutton',background='lightgreen')
+        style.configure('ReductionDetails.TRadiobutton',background='lightgreen')
         
         # Reduction Details
         ReductionDetails = tk.LabelFrame(self, 
@@ -1835,22 +1836,29 @@ class ReducedDetailsConfigurationForm(tk.Frame):
         self.inputs['Filename Stub Modifier'].grid(row=4, column=0)
 
         # Line 6
+        self.filename_stub_prefix_radiobutton = tk.StringVar()
         self.inputs['Filename Modifier Prefix'] = w.LabelInput(
                 ReductionDetails, "Filename Modifier Prefix",
+                input_var = self.filename_stub_prefix_radiobutton,               
                 field_spec=fields['filename_stub_prefix'],
                 label_args={'style':'ReductionDetails.TLabel'},
-                input_args={'style':'ReductionDetails.TCheckbutton'})
+                input_args={'style':'ReductionDetails.TRadiobutton',
+                                'variable':'radiobutton',
+                                'value':'True'})
         self.inputs['Filename Modifier Prefix'].grid(row=5, column=0, columnspan=1)
 
         self.inputs['Filename Modifier Suffix'] = w.LabelInput(
                 ReductionDetails, "Filename Modifier Suffix",
+                input_var = self.filename_stub_prefix_radiobutton,
                 field_spec=fields['filename_stub_prefix'],
                 label_args={'style':'ReductionDetails.TLabel'},
-                input_args={'style':'ReductionDetails.TCheckbutton'})
+                input_args={'style':'ReductionDetails.TRadiobutton',
+                                'variable':'radiobutton',
+                                'value':'False'})
         self.inputs['Filename Modifier Suffix'].grid(row=5, column=1, columnspan=1)
 
         ReductionDetails.grid(row=0, column=0, sticky=tk.W + tk.E)
- 
+
         self.reset()
         
     def get(self):
@@ -1883,8 +1891,12 @@ class ReducedDetailsConfigurationForm(tk.Frame):
         self.inputs['Filename Flat Stub'].set(fields['filename_flat_stub'])
         self.inputs['Filename Reduced Stub'].set(fields['filename_reduced_stub'])
         self.inputs['Filename Stub Modifier'].set(fields['filename_prefix_suffix_modifier'])
-        self.inputs['Filename Modifier Prefix'].set(fields.as_bool('filename_stub_prefix'))
-        self.inputs['Filename Modifier Suffix'].set(fields.as_bool('filename_stub_prefix'))
+
+        self.filename_stub_prefix_radiobutton = fields['filename_stub_prefix']
+        if self.filename_stub_prefix_radiobutton == 'True':
+            self.inputs['Filename Modifier Prefix'].input.invoke()
+        else:
+            self.inputs['Filename Modifier Suffix'].input.invoke()
 
     def save_form(self,fields):
         """ Save Form"""
@@ -1895,7 +1907,6 @@ class ReducedDetailsConfigurationForm(tk.Frame):
         fields['filename_reduced_stub'] = self.inputs['Filename Reduced Stub'].get()
         fields['filename_prefix_suffix_modifier'] = self.inputs['Filename Stub Modifier'].get()
         fields['filename_stub_prefix'] = self.inputs['Filename Modifier Prefix'].get()
-        fields['filename_stub_prefix'] = self.inputs['Filename Modifier Suffix'].get()
 
         return fields
 
