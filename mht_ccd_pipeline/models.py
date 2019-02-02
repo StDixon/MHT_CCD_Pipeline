@@ -23,7 +23,8 @@ class ImageFile_Model:
         "Filter":{'req':True,'type':FT.string},
         "Exposure":{'req':True,'type':FT.decimal},
         "Header": {'req': False, 'type': FT.long_string},
-        "Image": {'req': False, 'type': FT.long_string}
+        "Image": {'req': False, 'type': FT.long_string},
+        "Source": {'req': False, 'type': FT.string},
     }
 
     def __init__(self,filename):
@@ -208,14 +209,17 @@ class Configuration_Model:
 class ImageCollection_Model():
     """Image collection model"""
 
-    def __init__(self,keywords,paths,filemods,image_list):
+    def __init__(self,keywords,paths,filemods,image_list,file_list,usefits_list,updatefits_list):
         
         self.paths = paths
         self.filemods = filemods
         self.keywords = keywords
         self.imagelist = image_list
+        self.filelist = file_list
+        self.usefitslist = usefits_list
+        self.updatefitslist = updatefits_list
         
-        self.ic = ImageFileCollection(self.paths['source_dir'],keywords)
+        self.ic = ImageFileCollection(self.paths['source_dir'],keywords=self.keywords)
         self.table = self.ic.summary
 
         self.stats = {}
@@ -282,15 +286,31 @@ class ImageCollection_Model():
                         print("No %s in Header",self.imagelist[1])
 
     def copyImageTypes(self):
-        images = 0
-        while images < len(self.imagelist):
-            self.copyImageType(self.directorylist[images],self.imagelist[images])
-            images = images + 1
+        imagetypecount = 0
+        while imagetypecount < len(self.imagelist):
+            
+            if self.usefitslist[imagetypecount] == "True":
+                self.copyImageType(self.ic,self.directorylist[imagetypecount],self.updatefitslist[imagetypecount],self.imagelist[imagetypecount])
+            else:
+                print(repr(self.filelist[imagetypecount]))
+                tempic = ImageFileCollection(self.paths['source_dir'],keywords=self.keywords,glob_include='*'+self.filelist[imagetypecount]+'*')
+                self.copyImageTypeFname(tempic,self.directorylist[imagetypecount],self.updatefitslist[imagetypecount],
+                            self.imagelist[imagetypecount],self.filelist[imagetypecount])
+            imagetypecount = imagetypecount + 1
 
 
-    def copyImageType(self,dest_dir,image_type):
-        for hdu in self.ic.hdus(save_location=dest_dir, imagetyp=image_type, overwrite=True):
+    def copyImageType(self,ic,dest_dir,updatefits_list,image_type):
+        #imagetyp need changing here to be the item from keywords[0]
+        for hdu in ic.hdus(save_location=dest_dir, imagetyp=image_type, overwrite=True):
             pass
+
+    def copyImageTypeFname(self,ic,dest_dir,updatefits_list,image_list,file_list):
+        
+        for hdu in ic.hdus(save_location=dest_dir, overwrite=True):
+            if updatefits_list == "True":
+                print(repr(self.keywords[0]))
+                print(repr(image_list))
+                hdu.header[self.keywords[0]] = image_list
 
     def fileNames(self,ImageCollection,keys,include_path= False):
         names = ImageCollection.files_filtered(**keys,include_path= include_path)
@@ -416,6 +436,9 @@ class ImageCollection_Model():
         print('Science Exposures')
         print(repr(science_exposures))
         print(repr(science_table))
+
+        if True:
+            return
 
         print('Copy Filters')
         self.copyFilters(flat_ic,self.paths['flat_dir'],flat_filters)

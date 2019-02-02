@@ -319,7 +319,7 @@ class Application(tk.Tk):
     def populate_imagefileform(self):
         
         working_path = '.'
-        image_path = 'samples'
+        image_path = self.imagefileform.inputs['Source'].get()
         default_path = os.path.join(working_path,image_path)
         files = Path(default_path).glob('*.fit')
 
@@ -518,10 +518,34 @@ class Application(tk.Tk):
                         self.config_model.config['flat_details']['fits_header_image_value'],
                         self.config_model.config['science_details']['fits_header_image_value'],
                         )
-        
-        self.collection = m.ImageCollection_Model(keywords,paths,filemods,imagelist)
 
-        directorylist = (paths['bias_dir'],paths['dark_dir'],paths['flat_dir'],paths['science_dir'],paths['master_dir'],paths['output_dir'])
+        filelist = (self.config_model.config['bias_details']['filename_text'],
+                        self.config_model.config['dark_details']['filename_text'],
+                        self.config_model.config['flat_details']['filename_text'],
+                        self.config_model.config['science_details']['filename_text'],
+                        )
+
+        usefitslist = (self.config_model.config['bias_details']['use_fits'],
+                        self.config_model.config['dark_details']['use_fits'],
+                        self.config_model.config['flat_details']['use_fits'],
+                        self.config_model.config['science_details']['use_fits'],
+                        )
+        updatefitslist = (self.config_model.config['bias_details']['update_fits'],
+                        self.config_model.config['dark_details']['update_fits'],
+                        self.config_model.config['flat_details']['update_fits'],
+                        self.config_model.config['science_details']['update_fits'],
+                        )
+
+        directorylist = (paths['bias_dir'],
+                            paths['dark_dir'],
+                            paths['flat_dir'],
+                            paths['science_dir'],
+                            paths['master_dir'],
+                            paths['output_dir'])
+
+
+        self.collection = m.ImageCollection_Model(keywords,paths,filemods,imagelist,filelist,usefitslist,updatefitslist)
+
 
         m.ImageCollection_Model.performreduction(self.collection,self.settings,directorylist)
 

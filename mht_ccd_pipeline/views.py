@@ -29,6 +29,11 @@ class ShowImageFileForm(tk.Frame):
         self.settings = settings
         self.callbacks = callbacks
 
+        # Styles
+        style = ttk.Style()
+
+        style.configure('headerinfo.TLabel',background='khaki')
+
         # Build the form
         # A dict to keep track of input widgets
         self.inputs = {}
@@ -41,6 +46,14 @@ class ShowImageFileForm(tk.Frame):
             padx=10,
             pady=10
         )
+
+        #directory selection
+        self.inputs['Source'] = w.LabelInput(
+                headerinfo, "Source",
+                field_spec=fields['Source'],
+                input_args={'style':'headerinfo.TLabel'}
+                )
+        self.inputs['Source'].grid(row=0, column=0)
 
         # file selection treeview
         self.treeview = ttk.Treeview(
@@ -57,8 +70,8 @@ class ShowImageFileForm(tk.Frame):
         )
         self.treeview.configure(yscrollcommand=self.scrollbar.set)
         self.treeview.configure(show='headings')
-        self.treeview.grid(row=0,column=0,sticky='NSEW',padx=10, pady=10)
-        self.scrollbar.grid(row=0,column=1,sticky='NSW')
+        self.treeview.grid(row=1,column=0,sticky='NSEW',padx=10, pady=10)
+        self.scrollbar.grid(row=1,column=1,sticky='NSW')
 
         # Configure treeview columns
         for name, definition in self.column_defs.items():
@@ -83,7 +96,7 @@ class ShowImageFileForm(tk.Frame):
             input_args={"width": 80, "height": 50}
         )
         self.inputs['Header'].input.config(state='disabled')
-        self.inputs['Header'].grid(sticky="w", row=0, column=2, padx=10, pady=10)
+        self.inputs['Header'].grid(sticky="w", row=1, column=2, padx=10, pady=10)
 
         # Image display
         self.canvas = tk.Canvas(
@@ -94,7 +107,7 @@ class ShowImageFileForm(tk.Frame):
         )
         #self.inputs['Image'].input.config(state='disabled')
         #self.canvas.create_rectangle(0,0,600,400,fill='blue')
-        self.canvas.grid(sticky="w", row=0, column=3, padx=10, pady=10)
+        self.canvas.grid(sticky="w", row=1, column=3, padx=10, pady=10)
 
         headerinfo.grid(row=0,column=0,sticky="we")
 
