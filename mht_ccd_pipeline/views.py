@@ -53,25 +53,25 @@ class ShowImageFileForm(tk.Frame):
                 field_spec=fields['Source'],
                 input_args={'style':'headerinfo.TLabel'}
                 )
-        self.inputs['Source'].grid(row=0, column=0)
+        self.inputs['Source'].grid(row=0, column=0, columnspan=4)
 
         # file selection treeview
         self.treeview = ttk.Treeview(
-            self,
+            headerinfo,
             columns=list(self.column_defs.keys())[1:],
             selectmode='browse'
         )
 
         # scrollbar for treeview
-        self.scrollbar = ttk.Scrollbar(
-            self,
+        self.tvscrollbar = ttk.Scrollbar(
+            headerinfo,
             orient=tk.VERTICAL,
             command=self.treeview.yview
         )
-        self.treeview.configure(yscrollcommand=self.scrollbar.set)
+        self.treeview.configure(yscrollcommand=self.tvscrollbar.set)
         self.treeview.configure(show='headings')
         self.treeview.grid(row=1,column=0,sticky='NSEW',padx=10, pady=10)
-        self.scrollbar.grid(row=1,column=1,sticky='NSW')
+        self.tvscrollbar.grid(row=1,column=1,sticky='NSW')
 
         # Configure treeview columns
         for name, definition in self.column_defs.items():
@@ -91,23 +91,33 @@ class ShowImageFileForm(tk.Frame):
 
         # header display
         self.inputs['Header'] = w.LabelInput(
-            self, "Header",
+            headerinfo, "Header",
             field_spec=fields['Header'],
             input_args={"width": 80, "height": 50}
         )
+
+        # scrollbar for header
+        self.headscrollbar = tk.Scrollbar(
+            headerinfo,
+            orient=tk.VERTICAL,
+            command=self.inputs['Header'].input.yview)
+
+        self.inputs['Header'].input.config(yscrollcommand=self.headscrollbar.set)
+
         self.inputs['Header'].input.config(state='disabled')
         self.inputs['Header'].grid(sticky="w", row=1, column=2, padx=10, pady=10)
+        self.headscrollbar.grid(row=1,column=3,sticky='NSW')
 
         # Image display
         self.canvas = tk.Canvas(
-            self, width=800,height=500
+            headerinfo, width=600,height=500
             #"Image",
             #field_spec=fields['Image'],
             #input_args={"width": 80, "height": 50}
         )
         #self.inputs['Image'].input.config(state='disabled')
         #self.canvas.create_rectangle(0,0,600,400,fill='blue')
-        self.canvas.grid(sticky="w", row=1, column=3, padx=10, pady=10)
+        self.canvas.grid(sticky="w", row=1, column=5, padx=10, pady=10)
 
         headerinfo.grid(row=0,column=0,sticky="we")
 

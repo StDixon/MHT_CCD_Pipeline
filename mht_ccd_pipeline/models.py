@@ -209,7 +209,8 @@ class Configuration_Model:
 class ImageCollection_Model():
     """Image collection model"""
 
-    def __init__(self,keywords,paths,filemods,image_list,file_list,usefits_list,updatefits_list):
+    def __init__(self,keywords,paths,filemods,image_list,file_list,usefits_list,updatefits_list,
+                            usefitsfilter_list,updatefitsfilter_list,flatfilter_list,sciencefilter_list):
         
         self.paths = paths
         self.filemods = filemods
@@ -218,6 +219,10 @@ class ImageCollection_Model():
         self.filelist = file_list
         self.usefitslist = usefits_list
         self.updatefitslist = updatefits_list
+        self.usefitsfilterlist = usefitsfilter_list
+        self.updatefitsfilterlist = updatefitsfilter_list
+        self.flatfilterlist = flatfilter_list
+        self.sciencefilterlist = sciencefilter_list
         
         self.ic = ImageFileCollection(self.paths['source_dir'],keywords=self.keywords)
         self.table = self.ic.summary
@@ -292,7 +297,6 @@ class ImageCollection_Model():
             if self.usefitslist[imagetypecount] == "True":
                 self.copyImageType(self.ic,self.directorylist[imagetypecount],self.updatefitslist[imagetypecount],self.imagelist[imagetypecount])
             else:
-                print(repr(self.filelist[imagetypecount]))
                 tempic = ImageFileCollection(self.paths['source_dir'],keywords=self.keywords,glob_include='*'+self.filelist[imagetypecount]+'*')
                 self.copyImageTypeFname(tempic,self.directorylist[imagetypecount],self.updatefitslist[imagetypecount],
                             self.imagelist[imagetypecount],self.filelist[imagetypecount])
@@ -308,8 +312,6 @@ class ImageCollection_Model():
         
         for hdu in ic.hdus(save_location=dest_dir, overwrite=True):
             if updatefits_list == "True":
-                print(repr(self.keywords[0]))
-                print(repr(image_list))
                 hdu.header[self.keywords[0]] = image_list
 
     def fileNames(self,ImageCollection,keys,include_path= False):
@@ -323,7 +325,19 @@ class ImageCollection_Model():
                 os.makedirs(dest_dir)
                 for hdu in ImageCollection.hdus(save_location=dest_dir, filter=f, overwrite=True):
                     pass
-    
+
+    def copyFiltersFname(self, source_dir, filters, update):
+        for filtlist in filters:
+            for filt in filtlist:
+                filtdir = filt
+                dest_dir = os.path.join(source_dir,filtdir)
+                if not os.path.exists(dest_dir):
+                    os.makedirs(dest_dir)
+                    ImageCollection = ImageFileCollection(source_dir,keywords=self.keywords,glob_include='*'+filt+'.*')
+                    for hdu in ImageCollection.hdus(save_location=dest_dir, overwrite=True):
+                        if update == 'True':
+                            hdu.header[self.keywords[1]] = filt
+
     def copyExposures(self,ImageCollection, source_dir, exposures):
         for e in exposures:
             dir_name = 'exp_' + str(e)
@@ -333,12 +347,9 @@ class ImageCollection_Model():
                 for hdu in ImageCollection.hdus(save_location=dest_dir, exposure=e, overwrite=True):
                     pass
 
-    def createMasters(self,ImageCollection,Directory,Filename,ImageType,Filters=''):
+    def createMasters(self,ImageCollection,Directory,Filename,Masterheader):
         master_list = []
-        if Filters == '':
-            fnames = ImageCollection.files_filtered(imagetyp=ImageType)
-        else:
-            fnames = ImageCollection.files_filtered(imagetyp=ImageType,filter=Filters)
+        fnames = ImageCollection.summary['file']
             
         for fname in fnames:
             path_file = os.path.join(ImageCollection.location,fname)
@@ -353,26 +364,31 @@ class ImageCollection_Model():
 
         m_file = os.path.join(Directory,Filename)
 
+        if self.updatefitslist[4] == 'True':
+            master.header[self.keywords[0]] = Masterheader
+
         master.write(m_file, overwrite=True)
 
-    def removeBias(self,Bias_Directory,Master_Directory,Dest_Directory, BiasFilename, SourceFilename, DestFilename):
+    def removeBias(self,Bias_Directory,Master_Directory,Dest_Directory, BiasFilename, SourceFilename, DestFilename, MasterDescription):
         master_file = os.path.join(Master_Directory,SourceFilename)
         ccd = CCDData.read(master_file, unit = u.adu)
         bias_file = os.path.join(Bias_Directory,BiasFilename)
         master = CCDData.read(bias_file, unit = u.adu)
         master_br = ccdproc.subtract_bias(ccd,master)
+        master_br.header[self.keywords[0]]= MasterDescription + ' Bias Sub'
 
         mbr_file = os.path.join(Dest_Directory,DestFilename)
 
         master_br.write(mbr_file, overwrite=True)
 
 
-    def removeDark(self,Dark_Directory,Master_Directory,Dest_Directory, DarkFilename, SourceFilename, DestFilename):
+    def removeDark(self,Dark_Directory,Master_Directory,Dest_Directory, DarkFilename, SourceFilename, DestFilename, MasterDescription):
         master_file = os.path.join(Master_Directory,SourceFilename)
         ccd = CCDData.read(master_file, unit = u.adu)
         dark_file = os.path.join(Dark_Directory,DarkFilename)
         master = CCDData.read(dark_file, unit = u.adu)
         master_brds = ccdproc.subtract_dark(ccd=ccd,master=master,exposure_time=self.keywords[3],exposure_unit=u.second,scale=True)
+        master_brds.header[self.keywords[0]]= MasterDescription + ' Dark Rem'
         
         mbrds_file = os.path.join(Dest_Directory,DestFilename)
 
@@ -384,6 +400,7 @@ class ImageCollection_Model():
         flat_file = os.path.join(Flat_Directory, FlatFilename)
         master = CCDData.read(flat_file, unit = u.adu)
         master_red = ccdproc.flat_correct(ccd=ccd, flat=master)
+        master_red.header[self.keywords[0]] = self.imagelist[3]+' Reduced'
         
         mbrds_file = os.path.join(Destination_Directory,DestFilename)
 
@@ -437,37 +454,53 @@ class ImageCollection_Model():
         print(repr(science_exposures))
         print(repr(science_table))
 
-        if True:
-            return
-
-        print('Copy Filters')
-        self.copyFilters(flat_ic,self.paths['flat_dir'],flat_filters)
-        self.copyFilters(science_ic,self.paths['science_dir'],science_filters)
-
         print('Copy Exposures')
         self.copyExposures(dark_ic,self.paths['dark_dir'],dark_exposures)
 
+        print('Copy Filters')
+        if self.usefitsfilterlist[0] == 'True':
+            self.copyFilters(flat_ic,self.paths['flat_dir'],flat_filters)
+        else:
+            self.copyFiltersFname(self.paths['flat_dir'],self.flatfilterlist,self.updatefitsfilterlist[0])
+
+        if self.usefitsfilterlist[1] == 'True':
+            self.copyFilters(flat_ic,self.paths['flat_dir'],science_filters)
+        else:
+            self.copyFiltersFname(self.paths['science_dir'],self.sciencefilterlist,self.updatefitsfilterlist[1])
+
         print('Create Master Bias')
-        self.createMasters(bias_ic,self.paths['master_dir'],self.filemods['master_bias_name'] + '.fit',self.imagelist[0],'')
+        self.createMasters(bias_ic,self.paths['master_dir'],self.filemods['master_bias_name'] + '.fit',
+                    self.filemods['master_bias_header_value'])
 
         print('Create Master Darks')
-        self.createMasters(dark_ic,self.paths['master_dir'],self.filemods['master_dark_name'] + '.fit',self.imagelist[1],'')
+        self.createMasters(dark_ic,self.paths['master_dir'],self.filemods['master_dark_name'] + '.fit',
+                    self.filemods['master_dark_header_value'])
 
         print('Create Master Flats')
-        for filterType in flat_filters:
+        if self.usefitsfilterlist[0] == 'True':
+            filternames = flat_filters
+        else:
+            filternames = self.flatfilterlist[0]
+
+        for filterType in filternames:
             print('Create Master Flat ' + filterType)
             masterFile = self.filemods['master_flat_name'] + '_' + filterType + '.fit'
-            self.createMasters(flat_ic,self.paths['master_dir'],masterFile,self.imagelist[2],filterType)
+            filter_dir = os.path.join(self.paths['flat_dir'],filterType)
+            ImageCollection = ImageFileCollection(filter_dir)
+            self.createMasters(ImageCollection,self.paths['master_dir'],masterFile,
+                        self.filemods['master_flat_header_value'])
 
         print('Bias Removal')
         print('Bias Removal from Dark')
         if self.filemods['filename_mod_prefix']:
-            self.removeBias(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.filemods['master_bias_name'] + '.fit',self.filemods['master_dark_name'] + '.fit',self.filemods['bias_removal_mod'] + self.filemods['master_dark_name'] + '.fit')
+            self.removeBias(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.filemods['master_bias_name'] + '.fit',
+                self.filemods['master_dark_name'] + '.fit',self.filemods['bias_removal_mod'] + self.filemods['master_dark_name'] + '.fit',self.filemods['master_dark_header_value'])
         else:
-            self.removeBias(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.filemods['master_bias_name'] + '.fit',self.filemods['master_dark_name'] + '.fit',self.filemods['master_dark_name'] + self.filemods['bias_removal_mod'] +'.fit')
+            self.removeBias(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.filemods['master_bias_name'] + '.fit',
+                self.filemods['master_dark_name'] + '.fit',self.filemods['master_dark_name'] + self.filemods['bias_removal_mod'] +'.fit',self.filemods['master_dark_header_value'])
 
         print('Bias Removal from Flats')
-        for filterType in flat_filters:
+        for filterType in filternames:
             print('Bias Removal from Flat ' + filterType)
             masterFile = self.filemods['master_flat_name'] + '_' + filterType + '.fit'
             if self.filemods['filename_mod_prefix']:
@@ -475,20 +508,23 @@ class ImageCollection_Model():
             else:
                 masterFilebr = self.filemods['master_flat_name'] + '_' + filterType + self.filemods['bias_removal_mod'] + '.fit'
 
-            self.removeBias(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.filemods['master_bias_name'] + '.fit',masterFile,masterFilebr)
+            self.removeBias(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.filemods['master_bias_name'] + '.fit',
+                masterFile,masterFilebr,self.filemods['master_flat_header_value'])
 
         print('Dark Removal from Flats')
-        for filterType in flat_filters:
+        for filterType in filternames:
             print('Dark Removal from Flat ' + filterType)
             if self.filemods['filename_mod_prefix']:
                 masterFilebr = self.filemods['bias_removal_mod'] + self.filemods['master_flat_name'] +'_' + filterType + '.fit'
                 masterFilebrds = self.filemods['dark_removal_mod'] + self.filemods['bias_removal_mod'] + self.filemods['master_flat_name'] +'_' + filterType + '.fit'
-                self.removeDark(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.filemods['bias_removal_mod'] + self.filemods['master_dark_name'] + '.fit',masterFilebr,masterFilebrds)
+                self.removeDark(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.filemods['bias_removal_mod'] + self.filemods['master_dark_name'] + '.fit',
+                    masterFilebr,masterFilebrds,self.filemods['master_flat_header_value'])
             else:
                 masterFilebr = self.filemods['master_flat_name'] +'_' + filterType + self.filemods['bias_removal_mod'] +'.fit'
                 masterFilebrds = self.filemods['master_flat_name'] +'_' + filterType + self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + '.fit'
-                self.removeDark(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.filemods['master_dark_name'] + self.filemods['bias_removal_mod'] +'.fit',masterFilebr,masterFilebrds)
-               
+                self.removeDark(self.paths['master_dir'],self.paths['master_dir'],self.paths['master_dir'],self.filemods['master_dark_name'] + self.filemods['bias_removal_mod'] +'.fit',
+                    masterFilebr,masterFilebrds,self.filemods['master_flat_header_value'])
+                   
         print('Reduce Science File')
 
         print('Remove Bias & Dark')
@@ -496,16 +532,25 @@ class ImageCollection_Model():
             fname_noext = os.path.splitext(fname)[0]
             print(repr(fname_noext))
             if self.filemods['filename_mod_prefix']:
-                self.removeBias(self.paths['master_dir'],self.paths['science_dir'],self.paths['output_dir'],self.filemods['master_bias_name'] + '.fit',fname,self.filemods['bias_removal_mod'] + fname_noext + '.fit')
-                self.removeDark(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['bias_removal_mod'] + self.filemods['master_dark_name'] + '.fit',self.filemods['bias_removal_mod'] + fname_noext + '.fit',self.filemods['dark_removal_mod'] + self.filemods['bias_removal_mod'] + fname_noext + '.fit')
+                self.removeBias(self.paths['master_dir'],self.paths['science_dir'],self.paths['output_dir'],self.filemods['master_bias_name'] + '.fit',
+                    fname,self.filemods['bias_removal_mod'] + fname_noext + '.fit',self.imagelist[3])
+                self.removeDark(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['bias_removal_mod'] + self.filemods['master_dark_name'] + '.fit',
+                    self.filemods['bias_removal_mod'] + fname_noext + '.fit',self.filemods['dark_removal_mod'] + self.filemods['bias_removal_mod'] + fname_noext + '.fit',self.imagelist[3])
             else:
-                self.removeBias(self.paths['master_dir'],self.paths['science_dir'],self.paths['output_dir'],self.filemods['master_bias_name'] + '.fit',fname,fname_noext + self.filemods['bias_removal_mod'] + '.fit')
-                self.removeDark(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['master_dark_name'] + self.filemods['bias_removal_mod'] + '.fit',fname_noext + self.filemods['bias_removal_mod'] +'.fit',fname_noext + self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + '.fit')
+                self.removeBias(self.paths['master_dir'],self.paths['science_dir'],self.paths['output_dir'],self.filemods['master_bias_name'] + '.fit',
+                    fname,fname_noext + self.filemods['bias_removal_mod'] + '.fit',self.imagelist[3])
+                self.removeDark(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['master_dark_name'] + self.filemods['bias_removal_mod'] + '.fit',
+                    fname_noext + self.filemods['bias_removal_mod'] +'.fit',fname_noext + self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + '.fit',self.imagelist[3])
 
         print('Flat Correction')
-        for filterType in flat_filters:
+        for filterType in filternames:
             print(repr(filterType))
-            for fname in science_ic.files_filtered(filter=filterType):
+            #need to do filenames by other than filter when not using fits header
+
+            filter_dir = os.path.join(self.paths['science_dir'],filterType)
+            ImageCollection = ImageFileCollection(filter_dir)
+
+            for fname in ImageCollection.summary['file']:
                 fname_noext = os.path.splitext(fname)[0]
                 print(repr(fname_noext))
                 if self.filemods['filename_mod_prefix']:

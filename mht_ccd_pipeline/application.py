@@ -96,6 +96,8 @@ class Application(tk.Tk):
             self.callbacks
         )
         self.imagefileform.grid(row=0,padx=10,sticky='NSEW')
+
+        self.imagefileform.inputs['Source'].variable.trace('w', self.set_imagesource)
         self.populate_imagefileform()
 
         # CCD reduction form
@@ -323,14 +325,18 @@ class Application(tk.Tk):
         default_path = os.path.join(working_path,image_path)
         files = Path(default_path).glob('*.fit')
 
+        if files is None:
+            return
+
         rows = []
 
         for file in files:
             path = str(file)
             filename = str(file.name)
-            parent = str(file.parent)
-            if parent == '.' or parent == image_path:
-                parent = ''
+            #parent = str(file.parent)
+            #if parent == '.' or parent == image_path:
+            #    parent = ''
+            parent = ''
             row = {'Filename':filename,'Parent':parent,'Path':path}
             rows.append(row)
 
@@ -483,6 +489,9 @@ class Application(tk.Tk):
         filemods['master_bias_name'] = self.config_model.config['master_details']['filename_bias']
         filemods['master_dark_name'] = self.config_model.config['master_details']['filename_dark']
         filemods['master_flat_name'] = self.config_model.config['master_details']['filename_flat']
+        filemods['master_bias_header_value'] = self.config_model.config['master_details']['fits_header_image_value_bias']
+        filemods['master_dark_header_value'] = self.config_model.config['master_details']['fits_header_image_value_dark']
+        filemods['master_flat_header_value'] = self.config_model.config['master_details']['fits_header_image_value_flat']
         filemods['save_masters'] = self.config_model.config['directories'].as_bool('save_masters')
         filemods['save_working'] = self.config_model.config['directories'].as_bool('save_working')
 
@@ -534,8 +543,20 @@ class Application(tk.Tk):
                         self.config_model.config['dark_details']['update_fits'],
                         self.config_model.config['flat_details']['update_fits'],
                         self.config_model.config['science_details']['update_fits'],
+                        self.config_model.config['master_details']['update_fits'],
+                        )
+        usefitsfilterlist = (self.config_model.config['flat_details']['use_fits_filter'],
+                        self.config_model.config['science_details']['use_fits_filter'],
+                        )
+        updatefitsfilterlist = (self.config_model.config['flat_details']['update_fits_filter'],
+                        self.config_model.config['science_details']['update_fits_filter'],
                         )
 
+
+        flatfilterlist = (self.config_model.config['flat_details']['filename_text_filter'],
+                        )
+        sciencefilterlist = (self.config_model.config['science_details']['filename_text_filter'],
+                        )
         directorylist = (paths['bias_dir'],
                             paths['dark_dir'],
                             paths['flat_dir'],
@@ -544,32 +565,36 @@ class Application(tk.Tk):
                             paths['output_dir'])
 
 
-        self.collection = m.ImageCollection_Model(keywords,paths,filemods,imagelist,filelist,usefitslist,updatefitslist)
+        self.collection = m.ImageCollection_Model(keywords,paths,filemods,imagelist,filelist,usefitslist,updatefitslist,
+                    usefitsfilterlist,updatefitsfilterlist,flatfilterlist,sciencefilterlist)
 
 
         m.ImageCollection_Model.performreduction(self.collection,self.settings,directorylist)
 
         print('Copy Results')
+
+        temp = os.path.join(paths['source_dir'], self.config_model.config['directories']['output_dir'])
+        if os.path.isdir(temp):
+            shutil.rmtree(temp)
+        shutil.copytree(paths['output_dir'],temp)
+
         if filemods['save_working']:
             temp = os.path.join(paths['source_dir'], self.config_model.config['directories']['working_dir'])
             if os.path.isdir(temp):
                 shutil.rmtree(temp)
             shutil.copytree(self.config_model.config['directories']['working_dir'],temp)
-        else:
-            temp = os.path.join(paths['source_dir'], paths['output_dir'])
+        
+        if filemods['save_masters']:
+            temp = os.path.join(paths['source_dir'], self.config_model.config['directories']['master_dir'])
             if os.path.isdir(temp):
                 shutil.rmtree(temp)
-            shutil.copytree(paths['output_dir'],temp)
-
-            if filemods['save_masters']:
-                temp = os.path.join(paths['source_dir'], paths['master_dir'])
-                if os.path.isdir(temp):
-                    shutil.rmtree(temp)
-                shutil.copytree(paths['master_dir'],temp)
+            shutil.copytree(paths['master_dir'],temp)
 
         print('Delete Working')
         if os.path.isdir(self.config_model.config['directories']['working_dir']):
             shutil.rmtree(self.config_model.config['directories']['working_dir'])
+
+        print('Reduction and File Copies Complete')
 
 
     def set_font(self,*args):
@@ -578,3 +603,6 @@ class Application(tk.Tk):
         for font_name in font_names:
             tk_font = nametofont(font_name)
             tk_font.config(size=font_size)
+
+    def set_imagesource(self,*args):
+        self.populate_imagefileform()          
