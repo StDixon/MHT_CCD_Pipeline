@@ -11,6 +11,8 @@ from PIL import ImageTk as itk
 
 from . import widgets as w
 
+from .constants import FieldTypes as FT
+
 class ShowImageFileForm(tk.Frame):
     """Display FIT file data"""
     
@@ -32,7 +34,7 @@ class ShowImageFileForm(tk.Frame):
         # Styles
         style = ttk.Style()
 
-        style.configure('headerinfo.TLabel',background='khaki')
+        style.configure('headerinfo.TLabel',background='grey85')
 
         # Build the form
         # A dict to keep track of input widgets
@@ -42,7 +44,7 @@ class ShowImageFileForm(tk.Frame):
         headerinfo = tk.LabelFrame(
             self,
             text="Header Information",
-            bg="khaki",
+            bg="grey85",
             padx=10,
             pady=10
         )
@@ -183,75 +185,43 @@ class CCDReductionForm(tk.Frame):
     def __init__(self,parent,settings,callbacks,*args,**kwargs):
         super().__init__(parent,*args,**kwargs)
 
-        self.column_defs = {
-            '#0':{'label':'ID','width':50,'stretch':True,'anchor':tk.W,'command':lambda: self.sort(self.treeview,'#0')},
-            'Filename':{'label':'Filename','width':150,'stretch':True,'anchor':tk.W,'command':lambda: self.sort(self.treeview,'Filename')}
-           }
+        #self.column_defs = {
+        #    '#0':{'label':'ID','width':50,'stretch':True,'anchor':tk.W,'command':lambda: self.sort(self.treeview,'#0')},
+        #    'Filename':{'label':'Filename','width':150,'stretch':True,'anchor':tk.W,'command':lambda: self.sort(self.treeview,'Filename')}
+        #   }
 
         self.settings = settings
         self.callbacks = callbacks
 
+        # Styles
+        style = ttk.Style()
+
+        style.configure('mainframe.TLabel',background='grey85')
+
+        # Build the form
+        # A dict to keep track of input widgets
+        self.inputs = {}
+
         # main section
         mainframe = tk.LabelFrame(
             self,
-            text="File Information",
-            bg="khaki",
+            text="Reduction Information",
+            bg="grey85",
             padx=10,
             pady=10
         )
 
-        # collection treeview
-        self.treeview = ttk.Treeview(
-            self,
-            columns=list(self.column_defs.keys())[1:],
-            selectmode='none'
+        # header display
+        self.inputs['Status'] = w.LabelInput(
+            mainframe, "Status",
+            field_spec={'req': False, 'type': FT.long_string},
+            input_args={"width": 80, "height": 50}
         )
 
-        # scrollbar for treeview
-        self.scrollbar = ttk.Scrollbar(
-            self,
-            orient=tk.VERTICAL,
-            command=self.treeview.yview
-        )
-        self.treeview.configure(yscrollcommand=self.scrollbar.set)
-        self.treeview.configure(show='headings')
-        self.treeview.grid(row=0,column=0,sticky='NSEW',padx=10,pady=10)
-        self.scrollbar.grid(row=0,column=1,sticky='NSW')
-
-        # Configure treeview columns
-        for name, definition in self.column_defs.items():
-            label = definition.get('label','')
-            anchor = definition.get('anchor',self.default_anchor)
-            minwidth = definition.get('minwidth',self.default_minwidth)
-            width = definition.get('width',self.default_width)
-            stretch = definition.get('stretch',False)
-            command = definition.get('command','')
-
-            self.treeview.heading(name,text=label,anchor=anchor,command=command)
-            self.treeview.column(name,anchor=anchor,minwidth=minwidth,
-                                 width=width, stretch=stretch)
+        self.inputs['Status'].grid(sticky="w", row=1, column=2, padx=10, pady=10)
 
         mainframe.grid(row=0,column=0,sticky="we")
 
-    def populate_files(self,rows):
-        """Clear the treeview and write the supplied data rows to it."""
-
-        for row in self.treeview.get_children():
-            self.treeview.delete(row)
-
-        valuekeys = list(self.column_defs.keys())[1:]
-        for rownum, rowdata in enumerate(rows):
-            values = [rowdata[key] for key in valuekeys]
-            parent = rowdata['Parent']
-            iid = rowdata['Path']
-            self.treeview.insert(parent,'end',iid=iid,
-            text=str(rownum),values=values)
-
-    def sort(self,treeview,col):
-        itemlist = list(treeview.get_children(''))
-        itemlist.sort(key=lambda x:treeview.set(x,col))
-        for index, iid in enumerate(itemlist):
-            treeview.move(iid,treeview.parent(iid),index)
 
 class ConfigurationForm(tk.Frame):
     """The configuration form"""
@@ -269,27 +239,27 @@ class ConfigurationForm(tk.Frame):
         # Styles
         style = ttk.Style()
         
-        style.configure('Directories.TLabel',background='khaki')
-        style.configure('Directories.TCheckbutton',background='khaki')
-        style.configure('GeneralDetails.TLabel',background='lightblue')
-        style.configure('GeneralDetails.TCheckbutton',background='lightblue')
-        style.configure('BiasDetails.TLabel',background='lightgreen')
-        style.configure('BiasDetails.TCheckbutton',background='lightgreen')
-        style.configure('DarkDetails.TLabel',background='lightgreen')
-        style.configure('DarkDetails.TCheckbutton',background='lightgreen')
-        style.configure('FlatDetails.TLabel',background='lightgreen')
-        style.configure('FlatDetails.TCheckbutton',background='lightgreen')
-        style.configure('ScienceDetails.TLabel',background='lightgreen')
-        style.configure('ScienceDetails.TCheckbutton',background='lightgreen')
-        style.configure('MasterDetails.TLabel',background='lightgreen')
-        style.configure('MasterDetails.TCheckbutton',background='lightgreen')
-        style.configure('ReductionDetails.TLabel',background='lightgreen')
-        style.configure('ReductionDetails.TCheckbutton',background='lightgreen')
+        style.configure('Directories.TLabel',background='grey85')
+        style.configure('Directories.TCheckbutton',background='grey85')
+        style.configure('GeneralDetails.TLabel',background='grey85')
+        style.configure('GeneralDetails.TCheckbutton',background='grey85')
+        style.configure('BiasDetails.TLabel',background='grey85')
+        style.configure('BiasDetails.TCheckbutton',background='grey85')
+        style.configure('DarkDetails.TLabel',background='grey85')
+        style.configure('DarkDetails.TCheckbutton',background='grey85')
+        style.configure('FlatDetails.TLabel',background='grey85')
+        style.configure('FlatDetails.TCheckbutton',background='grey85')
+        style.configure('ScienceDetails.TLabel',background='grey85')
+        style.configure('ScienceDetails.TCheckbutton',background='grey85')
+        style.configure('MasterDetails.TLabel',background='grey85')
+        style.configure('MasterDetails.TCheckbutton',background='grey85')
+        style.configure('ReductionDetails.TLabel',background='grey85')
+        style.configure('ReductionDetails.TCheckbutton',background='grey85')
         
         # Directories
         Directories = tk.LabelFrame(self, 
                                    text="Directories",
-                                   bg="Khaki",
+                                   bg="grey85",
                                    padx=10,
                                    pady=10
                                    )
@@ -366,7 +336,7 @@ class ConfigurationForm(tk.Frame):
         # General Details
         GeneralDetails = tk.LabelFrame(self, 
                                    text="General Details",
-                                   bg="lightblue",
+                                   bg="grey85",
                                    padx=10,
                                    pady=10
                                    )
@@ -389,7 +359,7 @@ class ConfigurationForm(tk.Frame):
         # Bias Details
         BiasDetails = tk.LabelFrame(self, 
                                    text="Bias Details",
-                                   bg="lightgreen",
+                                   bg="grey85",
                                    padx=10,
                                    pady=10
                                    )
@@ -441,7 +411,7 @@ class ConfigurationForm(tk.Frame):
         # Dark Details
         DarkDetails = tk.LabelFrame(self, 
                                    text="Dark Details",
-                                   bg="lightgreen",
+                                   bg="grey85",
                                    padx=10,
                                    pady=10
                                    )
@@ -493,7 +463,7 @@ class ConfigurationForm(tk.Frame):
         # Flat Details
         FlatDetails = tk.LabelFrame(self, 
                                    text="Flat Details",
-                                   bg="lightgreen",
+                                   bg="grey85",
                                    padx=10,
                                    pady=10
                                    )
@@ -581,7 +551,7 @@ class ConfigurationForm(tk.Frame):
         # Science Details
         ScienceDetails = tk.LabelFrame(self, 
                                    text="Science Details",
-                                   bg="lightgreen",
+                                   bg="grey85",
                                    padx=10,
                                    pady=10
                                    )
@@ -669,7 +639,7 @@ class ConfigurationForm(tk.Frame):
         # Master Details
         MasterDetails = tk.LabelFrame(self, 
                                    text="Master Details",
-                                   bg="lightgreen",
+                                   bg="grey85",
                                    padx=10,
                                    pady=10
                                    )
@@ -732,7 +702,7 @@ class ConfigurationForm(tk.Frame):
         # Reduction Details
         ReductionDetails = tk.LabelFrame(self, 
                                    text="Reduction Details",
-                                   bg="lightgreen",
+                                   bg="grey85",
                                    padx=10,
                                    pady=10
                                    )
@@ -926,13 +896,13 @@ class DirectoriesConfigurationForm(tk.Frame):
         # Styles
         style = ttk.Style()
         
-        style.configure('Directories.TLabel',background='khaki')
-        style.configure('Directories.TCheckbutton',background='khaki')
+        style.configure('Directories.TLabel',background='grey85')
+        style.configure('Directories.TCheckbutton',background='grey85')
         
         # Directories
         Directories = tk.LabelFrame(self, 
                                    text="Directories",
-                                   bg="Khaki",
+                                   bg="grey85",
                                    padx=10,
                                    pady=10
                                    )
@@ -1076,13 +1046,13 @@ class GeneralConfigurationForm(tk.Frame):
         # Styles
         style = ttk.Style()
         
-        style.configure('GeneralDetails.TLabel',background='lightblue')
-        style.configure('GeneralDetails.TCheckbutton',background='lightblue')
+        style.configure('GeneralDetails.TLabel',background='grey85')
+        style.configure('GeneralDetails.TCheckbutton',background='grey85')
          
         # General Details
         GeneralDetails = tk.LabelFrame(self, 
                                    text="General Details",
-                                   bg="lightblue",
+                                   bg="grey85",
                                    padx=10,
                                    pady=10
                                    )
@@ -1173,14 +1143,14 @@ class BiasDetailsConfigurationForm(tk.Frame):
         # Styles
         style = ttk.Style()
         
-        style.configure('BiasDetails.TLabel',background='lightgreen')
-        style.configure('BiasDetails.TCheckbutton',background='lightgreen')
-        style.configure('BiasDetails.TRadiobutton',background='lightgreen')
+        style.configure('BiasDetails.TLabel',background='grey85')
+        style.configure('BiasDetails.TCheckbutton',background='grey85')
+        style.configure('BiasDetails.TRadiobutton',background='grey85')
         
         # Bias Details
         BiasDetails = tk.LabelFrame(self, 
                                    text="Bias Details",
-                                   bg="lightgreen",
+                                   bg="grey85",
                                    padx=10,
                                    pady=10
                                    )
@@ -1289,14 +1259,14 @@ class DarkDetailsConfigurationForm(tk.Frame):
         # Styles
         style = ttk.Style()
         
-        style.configure('DarkDetails.TLabel',background='lightgreen')
-        style.configure('DarkDetails.TCheckbutton',background='lightgreen')
-        style.configure('DarkDetails.TRadiobutton',background='lightgreen')
+        style.configure('DarkDetails.TLabel',background='grey85')
+        style.configure('DarkDetails.TCheckbutton',background='grey85')
+        style.configure('DarkDetails.TRadiobutton',background='grey85')
         
         # Dark Details
         DarkDetails = tk.LabelFrame(self, 
                                    text="Dark Details",
-                                   bg="lightgreen",
+                                   bg="grey85",
                                    padx=10,
                                    pady=10
                                    )
@@ -1405,14 +1375,14 @@ class FlatDetailsConfigurationForm(tk.Frame):
         # Styles
         style = ttk.Style()
         
-        style.configure('FlatDetails.TLabel',background='lightgreen')
-        style.configure('FlatDetails.TCheckbutton',background='lightgreen')
-        style.configure('FlatDetails.TRadiobutton',background='lightgreen')
+        style.configure('FlatDetails.TLabel',background='grey85')
+        style.configure('FlatDetails.TCheckbutton',background='grey85')
+        style.configure('FlatDetails.TRadiobutton',background='grey85')
         
         # Flat Details
         FlatDetails = tk.LabelFrame(self, 
                                    text="Flat Details",
-                                   bg="lightgreen",
+                                   bg="grey85",
                                    padx=10,
                                    pady=10
                                    )
@@ -1563,14 +1533,14 @@ class ScienceDetailsConfigurationForm(tk.Frame):
         # Styles
         style = ttk.Style()
         
-        style.configure('ScienceDetails.TLabel',background='lightgreen')
-        style.configure('ScienceDetails.TCheckbutton',background='lightgreen')
-        style.configure('ScienceDetails.TRadiobutton',background='lightgreen')
+        style.configure('ScienceDetails.TLabel',background='grey85')
+        style.configure('ScienceDetails.TCheckbutton',background='grey85')
+        style.configure('ScienceDetails.TRadiobutton',background='grey85')
         
         # Science Details
         ScienceDetails = tk.LabelFrame(self, 
                                    text="Science Details",
-                                   bg="lightgreen",
+                                   bg="grey85",
                                    padx=10,
                                    pady=10
                                    )
@@ -1721,13 +1691,13 @@ class MasterDetailsConfigurationForm(tk.Frame):
         # Styles
         style = ttk.Style()
         
-        style.configure('MasterDetails.TLabel',background='lightgreen')
-        style.configure('MasterDetails.TCheckbutton',background='lightgreen')
+        style.configure('MasterDetails.TLabel',background='grey85')
+        style.configure('MasterDetails.TCheckbutton',background='grey85')
         
         # Master Details
         MasterDetails = tk.LabelFrame(self, 
                                    text="Master Details",
-                                   bg="lightgreen",
+                                   bg="grey85",
                                    padx=10,
                                    pady=10
                                    )
@@ -1844,14 +1814,14 @@ class ReducedDetailsConfigurationForm(tk.Frame):
         # Styles
         style = ttk.Style()
         
-        style.configure('ReductionDetails.TLabel',background='lightgreen')
-        style.configure('ReductionDetails.TCheckbutton',background='lightgreen')
-        style.configure('ReductionDetails.TRadiobutton',background='lightgreen')
+        style.configure('ReductionDetails.TLabel',background='grey85')
+        style.configure('ReductionDetails.TCheckbutton',background='grey85')
+        style.configure('ReductionDetails.TRadiobutton',background='grey85')
         
         # Reduction Details
         ReductionDetails = tk.LabelFrame(self, 
                                    text="Reduction Details",
-                                   bg="lightgreen",
+                                   bg="grey85",
                                    padx=10,
                                    pady=10
                                    )

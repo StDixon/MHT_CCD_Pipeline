@@ -8,6 +8,9 @@ from astropy.io import fits
 from astropy import units as u
 import numpy as np
 
+import tkinter as tk
+from tkinter import ttk
+
 from configobj import ConfigObj
 
 import configparser
@@ -223,7 +226,8 @@ class ImageCollection_Model():
         self.updatefitsfilterlist = updatefitsfilter_list
         self.flatfilterlist = flatfilter_list
         self.sciencefilterlist = sciencefilter_list
-        
+        self.status = tk.StringVar()
+                
         self.ic = ImageFileCollection(self.paths['source_dir'],keywords=self.keywords)
         self.table = self.ic.summary
 
@@ -413,6 +417,8 @@ class ImageCollection_Model():
         self.directorylist = directorylist
 
         print('Create Directories')
+        self.status.set('Create Directories')
+        
         self.createWorkingDirectories()
 
         print('Copy Images')

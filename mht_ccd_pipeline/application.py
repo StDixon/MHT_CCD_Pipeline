@@ -106,8 +106,8 @@ class Application(tk.Tk):
             self.settings,
             self.callbacks
         )
-        self.imagefileform.grid(row=0,padx=10,sticky='NSEW')
-        self.populate_imagefileform()
+        self.ccdreductionform.grid(row=0,padx=10,sticky='NSEW')
+        self.populate_ccdreductionform()
 
         # Directories Configuration form
         self.directoriesconfigurationform = v.DirectoriesConfigurationForm(
@@ -180,6 +180,11 @@ class Application(tk.Tk):
             self.callbacks
         )
         self.reduceddetailsconfigurationform.grid(row=0,padx=10,sticky='NSEW')
+
+        # Status Bar
+        self.status = tk.StringVar()
+        self.statusbar = ttk.Label(self, textvariable=self.status)
+        self.statusbar.grid(sticky=(tk.W + tk.E), row=1, padx=10)
 
         self.populate_configurationforms()
 
@@ -255,18 +260,22 @@ class Application(tk.Tk):
 
     def show_ccdreduction(self):
         """Handle the go->ccdreduction action from the menu"""
-        self.create_collections()
 
         self.populate_ccdreductionform()
+
         self.ccdreductionform.tkraise()
+
+        self.create_collections()
 
     def show_directoryinfo(self):
         """Handle the conf->directories action from the menu"""
+        self.status.set("Directory Info Display")
  
         self.directoriesconfigurationform.tkraise()
 
     def show_generalinfo(self):
         """Handle the conf->general action from the menu"""
+        self.status.set("General Info Display")
  
         self.generalconfigurationform.tkraise()
 
@@ -344,23 +353,7 @@ class Application(tk.Tk):
 
     def populate_ccdreductionform(self):
         
-        working_path = '.'
-        image_path = 'samples'
-        default_path = os.path.join(working_path,image_path)
-        files = Path(default_path).glob('*.fits')
-
-        rows = []
-
-        for file in files:
-            path = str(file)
-            filename = str(file.name)
-            parent = str(file.parent)
-            if parent == '.' or parent == image_path:
-                parent = ''
-            row = {'Filename':filename,'Parent':parent,'Path':path}
-            rows.append(row)
-
-        self.ccdreductionform.populate_files(rows)
+        pass 
 
     def populate_configurationform(self):
         
@@ -380,7 +373,7 @@ class Application(tk.Tk):
             row = {'Filename':filename,'Parent':parent,'Path':path}
             rows.append(row)
 
-        self.ccdreductionform.populate_files(rows)
+        #self.ccdreductionform.populate_files(rows)
 
     def populate_directoriesconfigurationform(self):
 
@@ -568,6 +561,7 @@ class Application(tk.Tk):
         self.collection = m.ImageCollection_Model(keywords,paths,filemods,imagelist,filelist,usefitslist,updatefitslist,
                     usefitsfilterlist,updatefitsfilterlist,flatfilterlist,sciencefilterlist)
 
+        self.collection.status.trace('w', self.reduction_status)
 
         m.ImageCollection_Model.performreduction(self.collection,self.settings,directorylist)
 
@@ -605,4 +599,7 @@ class Application(tk.Tk):
             tk_font.config(size=font_size)
 
     def set_imagesource(self,*args):
-        self.populate_imagefileform()          
+        self.populate_imagefileform()   
+
+    def reduction_status(self):  
+        self.ccdreductionform.inputs['Status'].set(self.collection.status.get()) 
