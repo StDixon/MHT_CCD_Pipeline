@@ -185,27 +185,283 @@ class CCDReductionForm(tk.Frame):
     def __init__(self,parent,settings,callbacks,*args,**kwargs):
         super().__init__(parent,*args,**kwargs)
 
-        #self.column_defs = {
-        #    '#0':{'label':'ID','width':50,'stretch':True,'anchor':tk.W,'command':lambda: self.sort(self.treeview,'#0')},
-        #    'Filename':{'label':'Filename','width':150,'stretch':True,'anchor':tk.W,'command':lambda: self.sort(self.treeview,'Filename')}
-        #   }
-
         self.settings = settings
         self.callbacks = callbacks
 
         # Styles
         style = ttk.Style()
 
-        style.configure('mainframe.TLabel',background='grey85')
+        style.configure('sourceselframe.TLabel',background='grey85')
+        style.configure('sourceselframe.TRadiobutton',background='grey85')
+        style.configure('redstepsframe.TLabel',background='grey85')
+        style.configure('redstepsframe.TRadiobutton',background='grey85')
+        style.configure('statusframe.TLabel',background='grey85')
 
         # Build the form
         # A dict to keep track of input widgets
         self.inputs = {}
+        self.steps = {}
 
-        # main section
-        mainframe = tk.LabelFrame(
+        # Source Selection
+        sourceselframe = tk.LabelFrame(self, 
+                                   text="Source Selection",
+                                   bg="grey85",
+                                   padx=10,
+                                   pady=10
+                                   )
+        
+        #Line 1
+        self.steps['single'] = tk.StringVar()
+        self.steps['single'].set('True')
+        self.inputs['Single Directory'] = w.LabelInput(
+                sourceselframe, "Single Directory",
+                input_var=self.steps['single'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'SourceSel.TLabel'},
+                input_args={'style':'SourceSel.TRadiobutton',
+                                'variable':"self.steps['single']",
+                                'value' : 'True'})
+        self.inputs['Single Directory'].grid(row=1, column=0, columnspan=1)
+
+        self.inputs['Multiple Directories'] = w.LabelInput(
+                sourceselframe, "Multiple Directories",
+                input_var=self.steps['single'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'SourceSel.TLabel'},
+                input_args={'style':'SourceSel.TRadiobutton',
+                                'variable':"self.steps['single']",
+                                'value' : 'False'})
+        self.inputs['Multiple Directories'].grid(row=1, column=1, columnspan=1)
+
+        sourceselframe.grid(row=0, column=0, sticky=tk.W + tk.E)
+
+        # Reduction Steps
+        redstepsframe = tk.LabelFrame(self, 
+                                   text="Reduction Steps",
+                                   bg="grey85",
+                                   padx=10,
+                                   pady=10
+                                   )
+        
+        #Line 1
+        self.steps['CreateDir'] = tk.StringVar()
+        self.steps['CreateDir'].set('True')
+        self.inputs['Create Directories Y'] = w.LabelInput(
+                redstepsframe, "Y",
+                input_var=self.steps['CreateDir'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['CreateDir']",
+                                'value' : 'True'})
+        self.inputs['Create Directories Y'].grid(row=1, column=0, columnspan=1)
+
+        self.inputs['Create Directories N'] = w.LabelInput(
+                redstepsframe, "N: Create Directories",
+                input_var=self.steps['CreateDir'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['CreateDir']",
+                                'value' : 'False'})
+        self.inputs['Create Directories N'].grid(row=1, column=1, columnspan=1)
+
+        #Line 2
+        self.steps['CopyImages'] = tk.StringVar()
+        self.steps['CopyImages'].set('True')
+        self.inputs['Copy Images Y'] = w.LabelInput(
+                redstepsframe, "Y",
+                input_var=self.steps['CopyImages'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['CopyImages'] Images",
+                                'value' : 'True'})
+        self.inputs['Copy Images Y'].grid(row=2, column=0, columnspan=1)
+
+        self.inputs['Copy Images N'] = w.LabelInput(
+                redstepsframe, "N: Copy Images",
+                input_var=self.steps['CopyImages'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['CopyImages']",
+                                'value' : 'False'})
+        self.inputs['Copy Images N'].grid(row=2, column=1, columnspan=1)
+
+        #Line 3
+        self.steps['CreateMasters'] = tk.StringVar()
+        self.steps['CreateMasters'].set('True')
+        self.inputs['Create Masters Y'] = w.LabelInput(
+                redstepsframe, "Y",
+                input_var=self.steps['CreateMasters'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['CreateMasters']",
+                                'value' : 'True'})
+        self.inputs['Create Masters Y'].grid(row=3, column=0, columnspan=1)
+
+        self.inputs['Create Masters N'] = w.LabelInput(
+                redstepsframe, "N: Create Masters",
+                input_var=self.steps['CreateMasters'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['CreateMasters']",
+                                'value' : 'False'})
+        self.inputs['Create Masters N'].grid(row=3, column=1, columnspan=1)
+
+        #Line 4
+        self.steps['BiasRemoval'] = tk.StringVar()
+        self.steps['BiasRemoval'].set('True')
+        self.inputs['Bias Removal Y'] = w.LabelInput(
+                redstepsframe, "Y",
+                input_var=self.steps['BiasRemoval'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['BiasRemoval']",
+                                'value' : 'True'})
+        self.inputs['Bias Removal Y'].grid(row=4, column=0, columnspan=1)
+
+        self.inputs['Bias Removal N'] = w.LabelInput(
+                redstepsframe, "N: Bias Removal",
+                input_var=self.steps['BiasRemoval'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['BiasRemoval']",
+                                'value' : 'False'})
+        self.inputs['Bias Removal N'].grid(row=4, column=1, columnspan=1)
+
+        #Line 5
+        self.steps['DarkRemoval'] = tk.StringVar()
+        self.steps['DarkRemoval'].set('True')
+        self.inputs['Dark Removal Y'] = w.LabelInput(
+                redstepsframe, "Y",
+                input_var=self.steps['DarkRemoval'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['DarkRemoval']",
+                                'value' : 'True'})
+        self.inputs['Dark Removal Y'].grid(row=5, column=0, columnspan=1)
+
+        self.inputs['Dark Removal N'] = w.LabelInput(
+                redstepsframe, "N: Dark Removal",
+                input_var=self.steps['DarkRemoval'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['DarkRemoval']",
+                                'value' : 'False'})
+        self.inputs['Dark Removal N'].grid(row=5, column=1, columnspan=1)
+
+        #Line 6
+        self.steps['PerformReduction'] = tk.StringVar()
+        self.steps['PerformReduction'].set('True')
+        self.inputs['Perform Reduction Y'] = w.LabelInput(
+                redstepsframe, "Y",
+                input_var=self.steps['PerformReduction'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['PerformReduction']",
+                                'value' : 'True'})
+        self.inputs['Perform Reduction Y'].grid(row=6, column=0, columnspan=1)
+
+        self.inputs['Perform Reduction N'] = w.LabelInput(
+                redstepsframe, "N: Perform Reduction",
+                input_var=self.steps['PerformReduction'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['PerformReduction']",
+                                'value' : 'False'})
+        self.inputs['Perform Reduction N'].grid(row=6, column=1, columnspan=1)
+
+        #Line 7
+        self.steps['CopyResults'] = tk.StringVar()
+        self.steps['CopyResults'].set('True')
+        self.inputs['Copy Results Y'] = w.LabelInput(
+                redstepsframe, "Y",
+                input_var=self.steps['CopyResults'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['CopyResults']",
+                                'value' : 'True'})
+        self.inputs['Copy Results Y'].grid(row=7, column=0, columnspan=1)
+
+        self.inputs['Copy Results N'] = w.LabelInput(
+                redstepsframe, "N: Copy Results",
+                input_var=self.steps['CopyResults'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['CopyResults']",
+                                'value' : 'False'})
+        self.inputs['Copy Results N'].grid(row=7, column=1, columnspan=1)
+
+        #Line 8
+        self.steps['CopyWorking'] = tk.StringVar()
+        self.steps['CopyWorking'].set('True')
+        self.inputs['Copy Working Y'] = w.LabelInput(
+                redstepsframe, "Y",
+                input_var=self.steps['CopyWorking'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['CopyWorking']",
+                                'value' : 'True'})
+        self.inputs['Copy Working Y'].grid(row=8, column=0, columnspan=1)
+
+        self.inputs['Copy Working N'] = w.LabelInput(
+                redstepsframe, "N: Copy Working",
+                input_var=self.steps['CopyWorking'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['CopyWorking']",
+                                'value' : 'False'})
+        self.inputs['Copy Working N'].grid(row=8, column=1, columnspan=1)
+
+        #Line 9
+        self.steps['DeleteDir'] = tk.StringVar()
+        self.steps['DeleteDir'].set('True')
+        self.inputs['Delete Directories Y'] = w.LabelInput(
+                redstepsframe, "Y",
+                input_var=self.steps['DeleteDir'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['DeleteDir']",
+                                'value' : 'True'})
+        self.inputs['Delete Directories Y'].grid(row=9, column=0, columnspan=1)
+
+        self.inputs['Delete Directories N'] = w.LabelInput(
+                redstepsframe, "N: Delete Directories",
+                input_var=self.steps['DeleteDir'], 
+                field_spec={'req': False,'type':FT.rstring,'value':'True'},
+                label_args={'style':'RedSteps.TLabel'},
+                input_args={'style':'RedSteps.TRadiobutton',
+                                'variable':"self.steps['DeleteDir']",
+                                'value' : 'False'})
+        self.inputs['Delete Directories N'].grid(row=9, column=1, columnspan=1)
+
+        #Line 10
+        self.RedButton = tk.Button(redstepsframe, 
+                text='Perform Reduction',
+                command=self.callbacks['reduction->go'],)
+        self.RedButton.grid(row=10, column=0, columnspan=2)
+
+        redstepsframe.grid(row=1, column=0, sticky=tk.W + tk.E)
+
+        # status section
+        statusframe = tk.LabelFrame(
             self,
-            text="Reduction Information",
+            text="Reduction Status",
             bg="grey85",
             padx=10,
             pady=10
@@ -213,15 +469,14 @@ class CCDReductionForm(tk.Frame):
 
         # header display
         self.inputs['Status'] = w.LabelInput(
-            mainframe, "Status",
+            statusframe, "Status",
             field_spec={'req': False, 'type': FT.long_string},
-            input_args={"width": 80, "height": 50}
+            input_args={"width": 80, "height": 10}
         )
 
         self.inputs['Status'].grid(sticky="w", row=1, column=2, padx=10, pady=10)
 
-        mainframe.grid(row=0,column=0,sticky="we")
-
+        statusframe.grid(row=3,column=0,sticky="we")
 
 class ConfigurationForm(tk.Frame):
     """The configuration form"""

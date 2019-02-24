@@ -81,6 +81,7 @@ class Application(tk.Tk):
             'conf->masterdetails':self.show_masterinfo,
             'conf->reduceddetails':self.show_reducedinfo,
             'on_open_image_file':self.open_image_file,
+            'reduction->go':self.create_collections,
         }
 
         # Menu
@@ -264,8 +265,6 @@ class Application(tk.Tk):
         self.populate_ccdreductionform()
 
         self.ccdreductionform.tkraise()
-
-        self.create_collections()
 
     def show_directoryinfo(self):
         """Handle the conf->directories action from the menu"""
@@ -557,39 +556,75 @@ class Application(tk.Tk):
                             paths['master_dir'],
                             paths['output_dir'])
 
+        if self.ccdreductionform.steps['single'].get() == 'False':
 
-        self.collection = m.ImageCollection_Model(keywords,paths,filemods,imagelist,filelist,usefitslist,updatefitslist,
+            subfolders = [f.name for f in os.scandir(paths['source_dir']) if f.is_dir() ] 
+
+            print(repr(subfolders))
+            print('Multiple Pass')
+
+            for folder in subfolders:
+                
+                print(repr(folder))
+                temp = os.path.join(self.config_model.config['directories']['source_dir'],folder)
+                paths['source_dir'] = temp
+
+                self.collection = m.ImageCollection_Model(keywords,paths,filemods,imagelist,filelist,usefitslist,updatefitslist,
+                        usefitsfilterlist,updatefitsfilterlist,flatfilterlist,sciencefilterlist)
+
+                self.collection.status.trace('w', self.reduction_status)
+
+                self.reduce_collection(directorylist,filemods,paths)
+
+        else:
+
+            print('Single Pass')
+
+            self.collection = m.ImageCollection_Model(keywords,paths,filemods,imagelist,filelist,usefitslist,updatefitslist,
                     usefitsfilterlist,updatefitsfilterlist,flatfilterlist,sciencefilterlist)
 
-        self.collection.status.trace('w', self.reduction_status)
+            self.collection.status.trace('w', self.reduction_status)
 
-        m.ImageCollection_Model.performreduction(self.collection,self.settings,directorylist)
+            self.reduce_collection(directorylist,filemods,paths)
 
-        print('Copy Results')
-
-        temp = os.path.join(paths['source_dir'], self.config_model.config['directories']['output_dir'])
-        if os.path.isdir(temp):
-            shutil.rmtree(temp)
-        shutil.copytree(paths['output_dir'],temp)
-
-        if filemods['save_working']:
-            temp = os.path.join(paths['source_dir'], self.config_model.config['directories']['working_dir'])
-            if os.path.isdir(temp):
-                shutil.rmtree(temp)
-            shutil.copytree(self.config_model.config['directories']['working_dir'],temp)
-        
-        if filemods['save_masters']:
-            temp = os.path.join(paths['source_dir'], self.config_model.config['directories']['master_dir'])
-            if os.path.isdir(temp):
-                shutil.rmtree(temp)
-            shutil.copytree(paths['master_dir'],temp)
-
-        print('Delete Working')
-        if os.path.isdir(self.config_model.config['directories']['working_dir']):
-            shutil.rmtree(self.config_model.config['directories']['working_dir'])
 
         print('Reduction and File Copies Complete')
 
+    def reduce_collection(self,directorylist,filemods,paths):
+        """Reduce the collection"""
+
+        m.ImageCollection_Model.reductionSetupDir(self.collection,self.settings,directorylist)
+
+        if self.ccdreductionform.steps['CreateDir'].get() == 'True':
+            m.ImageCollection_Model.reductionCreateDirectories(self.collection)
+        if self.ccdreductionform.steps['CopyImages'].get() == 'True':
+            m.ImageCollection_Model.reductionCopyImages(self.collection)
+
+        m.ImageCollection_Model.reductionSetupCollections(self.collection)
+        
+        if self.ccdreductionform.steps['CopyImages'].get() == 'True':
+            m.ImageCollection_Model.reductionCopyExpFilt(self.collection)
+
+        if self.ccdreductionform.steps['CreateMasters'].get() == 'True':
+            m.ImageCollection_Model.reductionCreateMasters(self.collection)
+        if self.ccdreductionform.steps['BiasRemoval'].get() == 'True':
+            m.ImageCollection_Model.reductionBiasRemoval(self.collection)
+        if self.ccdreductionform.steps['DarkRemoval'].get() == 'True':
+            m.ImageCollection_Model.reductionDarkRemoval(self.collection)
+        if self.ccdreductionform.steps['PerformReduction'].get() == 'True':
+            m.ImageCollection_Model.reductionReduceScience(self.collection)
+        if self.ccdreductionform.steps['CopyResults'].get() == 'True':
+            m.ImageCollection_Model.reductionCopyResults(self.collection,paths['source_dir'],
+                    self.config_model.config['directories']['output_dir'],
+                    paths['output_dir'])
+        if self.ccdreductionform.steps['CopyWorking'].get() == 'True':
+            m.ImageCollection_Model.reductionCopyWorking(self.collection,filemods,paths['source_dir'],
+                    self.config_model.config['directories']['working_dir'],
+                    self.config_model.config['directories']['master_dir'],
+                    paths['master_dir'])
+        if self.ccdreductionform.steps['DeleteDir'].get() == 'True':
+            m.ImageCollection_Model.reductionDeleteDirs(self.collection,
+                    self.config_model.config['directories']['working_dir'])
 
     def set_font(self,*args):
         font_size = self.settings['font size'].get()
