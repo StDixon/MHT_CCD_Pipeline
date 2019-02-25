@@ -311,9 +311,11 @@ class Application(tk.Tk):
     def open_image_file(self,filename=None):
         if filename is None:
             header = None
+            image = None
         else:
             try:
                 header = self.imagefile_model.get_fileheader(filename)
+                image = self.imagefile_model.get_fileimage(filename)
             except Exception as e:
                 messagebox.showerror(
                     title='Error',
@@ -322,6 +324,7 @@ class Application(tk.Tk):
                 )
                 return
         self.imagefileform.load_header(header)
+        self.imagefileform.load_image(image)
         self.imagefileform.tkraise()
 
         #self.open_file_image(filename)

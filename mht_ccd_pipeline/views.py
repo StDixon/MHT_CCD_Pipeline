@@ -7,7 +7,8 @@ from astropy.visualization import astropy_mpl_style
 from astropy.utils.data import get_pkg_data_filename
 from astropy.io import fits
 
-from PIL import ImageTk as itk
+from PIL import Image
+from PIL import ImageTk
 
 from . import widgets as w
 
@@ -112,14 +113,16 @@ class ShowImageFileForm(tk.Frame):
 
         # Image display
         self.canvas = tk.Canvas(
-            headerinfo, width=600,height=500
-            #"Image",
-            #field_spec=fields['Image'],
-            #input_args={"width": 80, "height": 50}
+            headerinfo, width=512,height=512
         )
-        #self.inputs['Image'].input.config(state='disabled')
-        #self.canvas.create_rectangle(0,0,600,400,fill='blue')
-        self.canvas.grid(sticky="w", row=1, column=5, padx=10, pady=10)
+        self.canvasxsb = tk.Scrollbar(headerinfo, orient=tk.HORIZONTAL, command=self.canvas.xview)
+        self.canvasysb = tk.Scrollbar(headerinfo, orient=tk.VERTICAL, command=self.canvas.yview)
+        self.canvas.configure(yscrollcommand=self.canvasysb.set, xscrollcommand=self.canvasxsb.set)
+        
+        self.canvasxsb.grid(row=2, column=5, sticky="ews")
+        self.canvasysb.grid(row=1, column=6, sticky="nsw")
+
+        self.canvas.grid(sticky=tk.N+tk.S+tk.E+tk.W, row=1, column=5, padx=10, pady=10)
 
         headerinfo.grid(row=0,column=0,sticky="we")
 
@@ -150,24 +153,27 @@ class ShowImageFileForm(tk.Frame):
 
     def load_image(self,image,*args):
 
-        plt.style.use(astropy_mpl_style)
-        plt.colorbar
-
         print(image.shape)
-        print(repr(image))       
+        print(repr(image))
+
+        width = self.canvas.winfo_reqwidth()       
+        height = self.canvas.winfo_reqheight()  
         
-        pic = plt.imshow(image,cmap='gray')
-        photo = tk.PhotoImage(master=self.canvas)
+        plt.imsave("tempimgfile.png", image, cmap=plt.cm.gray)
+
+        img = Image.open("tempimgfile.png")
+        img = img.resize((width,height), Image.ANTIALIAS)
+
+        photo = ImageTk.PhotoImage(img)
+        
         print(repr(photo))
         self.canvas.photolist = []
 
-        self.canvas.create_image(0,0,image=photo)
+        self.canvas.create_image(0,0,image=photo,anchor="nw")
+        self.canvas.configure(scrollregion=(0,0,width,height))
+        
         self.canvas.photolist.append(photo)
-        
-        
-        #self.inputs['Image'].input.config(state='normal')
-        #self.inputs['Image'].set(hold)
-        #self.inputs['Image'].input.config(state='disabled')
+     
  
     def sort(self,treeview,col):
         itemlist = list(treeview.get_children(''))
