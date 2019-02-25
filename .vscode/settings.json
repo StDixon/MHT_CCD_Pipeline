@@ -1,0 +1,4 @@
+{
+    "python.pythonPath": "/home/sdixon/anaconda3/envs/MHT_CCD_Pipeline/bin/python",
+    "python.linting.pylintEnabled": true
+}
