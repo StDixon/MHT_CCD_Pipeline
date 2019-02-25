@@ -306,7 +306,6 @@ class ImageCollection_Model():
                             self.imagelist[imagetypecount],self.filelist[imagetypecount])
             imagetypecount = imagetypecount + 1
 
-
     def copyImageType(self,ic,dest_dir,updatefits_list,image_type):
         #imagetyp need changing here to be the item from keywords[0]
         for hdu in ic.hdus(save_location=dest_dir, imagetyp=image_type, overwrite=True):
@@ -358,13 +357,9 @@ class ImageCollection_Model():
         for fname in fnames:
             path_file = os.path.join(ImageCollection.location,fname)
             ccd = CCDData.read(path_file, unit = u.adu)
-            #this has to be fixed as the bias section does not include the whole section that will be trimmed
-            #ccd = ccdproc.subtract_overscan(ccd, median=True,  overscan_axis=0, fits_section='[1:966,4105:4190]')
-            #ccd = ccdproc.trim_image(ccd, fits_section=ccd.header['TRIMSEC'] )
             master_list.append(ccd)
         
         master = ccdproc.combine(master_list, method='median')
-        #master_bias_blue.write('master_bias_blue.fits', clobber=True)
 
         m_file = os.path.join(Directory,Filename)
 

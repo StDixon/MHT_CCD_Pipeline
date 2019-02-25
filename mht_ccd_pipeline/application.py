@@ -327,8 +327,6 @@ class Application(tk.Tk):
         self.imagefileform.load_image(image)
         self.imagefileform.tkraise()
 
-        #self.open_file_image(filename)
-
     def populate_imagefileform(self):
         
         working_path = '.'
@@ -344,9 +342,6 @@ class Application(tk.Tk):
         for file in files:
             path = str(file)
             filename = str(file.name)
-            #parent = str(file.parent)
-            #if parent == '.' or parent == image_path:
-            #    parent = ''
             parent = ''
             row = {'Filename':filename,'Parent':parent,'Path':path}
             rows.append(row)
@@ -374,8 +369,6 @@ class Application(tk.Tk):
                 parent = ''
             row = {'Filename':filename,'Parent':parent,'Path':path}
             rows.append(row)
-
-        #self.ccdreductionform.populate_files(rows)
 
     def populate_directoriesconfigurationform(self):
 
@@ -562,8 +555,6 @@ class Application(tk.Tk):
         if self.ccdreductionform.steps['single'].get() == 'False':
 
             subfolders = [f.name for f in os.scandir(paths['source_dir']) if f.is_dir() ] 
-
-            print(repr(subfolders))
             print('Multiple Pass')
 
             for folder in subfolders:
