@@ -120,6 +120,8 @@ class Configuration_Model:
         'fits_header_filter': {'req': True,'type':FT.string,'value': 'FILTER'},
         'fits_header_CCD_Temp': {'req': True,'type':FT.string,'value': 'TEMP'},
         'fits_header_exposure': {'req': True,'type':FT.string,'value': 'EXPOSURE'},
+        'ccd_gain': {'req': True,'type':FT.decimal,'value': 1.43,'min': 0, 'inc': .001},
+        'ccd_readnoise': {'req': True,'type':FT.decimal,'value': 1.2,'min': 0, 'inc': .001},
     }
 
     bias_details = {
@@ -141,7 +143,7 @@ class Configuration_Model:
         'filename_text': {'req': True,'type':FT.string,'value': 'flat'},
         'use_fits': {'req': False,'type':FT.rstring,'value':'True'},
         'update_fits': {'req': True,'type':FT.boolean,'value':'True'},
-        'filename_text_filter': {'req': True,'type':FT.string,'value': {'Ha','B','R','G'}},
+        'filename_text_filter': {'req': True,'type':FT.string,'value': 'Ha B R V'},
         'use_fits_filter': {'req': False,'type':FT.rstring,'value':'True'},
         'update_fits_filter': {'req': True,'type':FT.boolean,'value':'True'},
     }
@@ -151,7 +153,7 @@ class Configuration_Model:
         'filename_text': {'req': True,'type':FT.string,'value': ''},
         'use_fits': {'req': False,'type':FT.rstring,'value':'True'},
         'update_fits': {'req': True,'type':FT.boolean,'value':'True'},
-        'filename_text_filter': {'req': True,'type':FT.string,'value': {'Ha','B','R','G'}},
+        'filename_text_filter': {'req': True,'type':FT.string,'value': 'Ha B R V'},
         'use_fits_filter': {'req': False,'type':FT.rstring,'value':'True'},
         'update_fits_filter': {'req': True,'type':FT.boolean,'value':'True'},
     }
@@ -330,16 +332,15 @@ class ImageCollection_Model():
                     pass
 
     def copyFiltersFname(self, source_dir, filters, update):
-        for filtlist in filters:
-            for filt in filtlist:
-                filtdir = filt
-                dest_dir = os.path.join(source_dir,filtdir)
-                if not os.path.exists(dest_dir):
-                    os.makedirs(dest_dir)
-                    ImageCollection = ImageFileCollection(source_dir,keywords=self.keywords,glob_include='*'+filt+'.*')
-                    for hdu in ImageCollection.hdus(save_location=dest_dir, overwrite=True):
-                        if update == 'True':
-                            hdu.header[self.keywords[1]] = filt
+        for filt in filters:
+            filtdir = filt
+            dest_dir = os.path.join(source_dir,filtdir)
+            if not os.path.exists(dest_dir):
+                os.makedirs(dest_dir)
+                ImageCollection = ImageFileCollection(source_dir,keywords=self.keywords,glob_include='*'+filt+'.*')
+                for hdu in ImageCollection.hdus(save_location=dest_dir, overwrite=True):
+                    if update == 'True':
+                        hdu.header[self.keywords[1]] = filt
 
     def copyExposures(self,ImageCollection, source_dir, exposures):
         for e in exposures:
@@ -477,13 +478,14 @@ class ImageCollection_Model():
         self.createMasters(dark_ic,self.paths['master_dir'],self.filemods['master_dark_name'] + '.fit',
                     self.filemods['master_dark_header_value'])
 
-        print('Create Master Flats')
+        print('Create Master Flatsx')
         if self.usefitsfilterlist[0] == 'True':
             filternames = flat_filters
         else:
-            filternames = self.flatfilterlist[0]
-
+            filternames = self.flatfilterlist
+        print(repr(filternames))
         for filterType in filternames:
+            print(repr(filterType))
             print('Create Master Flat ' + filterType)
             masterFile = self.filemods['master_flat_name'] + '_' + filterType + '.fit'
             filter_dir = os.path.join(self.paths['flat_dir'],filterType)
@@ -636,7 +638,7 @@ class ImageCollection_Model():
         if self.usefitsfilterlist[0] == 'True':
             filternames = self.flat_filters
         else:
-            filternames = self.flatfilterlist[0]
+            filternames = self.flatfilterlist
 
         for filterType in filternames:
             print('Create Master Flat ' + filterType)
@@ -663,7 +665,7 @@ class ImageCollection_Model():
         if self.usefitsfilterlist[0] == 'True':
             filternames = self.flat_filters
         else:
-            filternames = self.flatfilterlist[0]
+            filternames = self.flatfilterlist
 
         for filterType in filternames:
             print('Bias Removal from Flat ' + filterType)
@@ -684,7 +686,7 @@ class ImageCollection_Model():
         if self.usefitsfilterlist[0] == 'True':
             filternames = self.flat_filters
         else:
-            filternames = self.flatfilterlist[0]
+            filternames = self.flatfilterlist
 
         for filterType in filternames:
             print('Dark Removal from Flat ' + filterType)
@@ -724,7 +726,7 @@ class ImageCollection_Model():
         if self.usefitsfilterlist[1] == 'True':
             filternames = self.science_filters
         else:
-            filternames = self.sciencefilterlist[0]
+            filternames = self.sciencefilterlist
 
         for filterType in filternames:
             print(repr(filterType))

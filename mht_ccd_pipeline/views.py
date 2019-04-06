@@ -484,6 +484,11 @@ class CCDReductionForm(tk.Frame):
 
         statusframe.grid(row=3,column=0,sticky="we")
 
+    def set_status(self,status):
+        """Set the Status"""
+
+        self.inputs['Status'].set(status)
+
 class DirectoriesConfigurationForm(tk.Frame):
     """The directories configuration form"""
     
@@ -681,6 +686,19 @@ class GeneralConfigurationForm(tk.Frame):
                 label_args={'style':'GeneralDetails.TLabel'})
         self.inputs['FITS Header CCD Temp'].grid(row=1, column=1)
 
+        # Line 3
+        self.inputs['CCD Gain'] = w.LabelInput(
+                GeneralDetails, "CCD Gain",
+                field_spec=fields['ccd_gain'],
+                label_args={'style':'GeneralDetails.TLabel'})
+        self.inputs['CCD Gain'].grid(row=2, column=0)
+
+        self.inputs['CCD Readnoise'] = w.LabelInput(
+                GeneralDetails, "CCD Readnoise",
+                field_spec=fields['ccd_readnoise'],
+                label_args={'style':'GeneralDetails.TLabel'})
+        self.inputs['CCD Readnoise'].grid(row=2, column=1)
+
         GeneralDetails.grid(row=0, column=0, sticky=tk.W + tk.E)
  
         self.reset()
@@ -708,6 +726,8 @@ class GeneralConfigurationForm(tk.Frame):
         self.inputs['FITS Header Filter'].set(fields['fits_header_filter'])
         self.inputs['FITS Header Exposure'].set(fields['fits_header_exposure'])
         self.inputs['FITS Header CCD Temp'].set(fields['fits_header_CCD_temp'])
+        self.inputs['CCD Gain'].set(fields['ccd_gain'])
+        self.inputs['CCD Readnoise'].set(fields['ccd_readnoise'])
 
     def save_form(self,fields):
         """ Save Form"""
@@ -716,6 +736,8 @@ class GeneralConfigurationForm(tk.Frame):
         fields['fits_header_filter'] = self.inputs['FITS Header Filter'].get()
         fields['fits_header_exposure'] = self.inputs['FITS Header Exposure'].get()
         fields['fits_header_CCD_temp'] = self.inputs['FITS Header CCD Temp'].get()
+        fields['ccd_gain'] = self.inputs['CCD Gain'].get()
+        fields['ccd_readnoise'] = self.inputs['CCD Readnoise'].get()
 
         return fields
 
@@ -1088,6 +1110,8 @@ class FlatDetailsConfigurationForm(tk.Frame):
         fields['filename_text_filter'] = self.inputs['Filename Filter Text'].get()
         fields['use_fits_filter'] = self.inputs['Use FITS Header Filter'].get()
         fields['update_fits_filter'] = self.inputs['Update FITS Header Filter'].get()
+
+        print(repr(fields['filename_text_filter']))
 
         return fields
 

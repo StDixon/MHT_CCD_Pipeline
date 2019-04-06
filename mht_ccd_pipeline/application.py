@@ -541,10 +541,10 @@ class Application(tk.Tk):
                         )
 
 
-        flatfilterlist = (self.config_model.config['flat_details']['filename_text_filter'],
-                        )
-        sciencefilterlist = (self.config_model.config['science_details']['filename_text_filter'],
-                        )
+        flatfilterlist = (self.config_model.config['flat_details']['filename_text_filter'].split())
+
+        sciencefilterlist = (self.config_model.config['science_details']['filename_text_filter'].split())
+
         directorylist = (paths['bias_dir'],
                             paths['dark_dir'],
                             paths['flat_dir'],
@@ -586,6 +586,8 @@ class Application(tk.Tk):
 
     def reduce_collection(self,directorylist,filemods,paths):
         """Reduce the collection"""
+
+        v.CCDReductionForm.set_status(self.ccdreductionform,'Starting Reduction Process')
 
         m.ImageCollection_Model.reductionSetupDir(self.collection,self.settings,directorylist)
 
