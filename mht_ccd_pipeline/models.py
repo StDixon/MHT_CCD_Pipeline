@@ -1,4 +1,4 @@
-import os, shutil
+import os, fnmatch, shutil
 import json
 
 import ccdproc
@@ -307,15 +307,41 @@ class ImageCollection_Model():
 
     def copyImageTypes(self,gain,readnoise):
         imagetypecount = 0
+        print(repr(self.filelist))
+
         while imagetypecount < len(self.imagelist):
             
             if self.usefitslist[imagetypecount] == "True":
                 self.copyImageType(self.ic,self.directorylist[imagetypecount],self.updatefitslist[imagetypecount],self.imagelist[imagetypecount]
                         ,gain,readnoise)
             else:
-                tempic = ImageFileCollection(self.paths['source_dir'],keywords=self.keywords,glob_include='*'+self.filelist[imagetypecount]+'*')
+                print(repr(imagetypecount))
+                print(repr(self.filelist[3]))
+                if imagetypecount != 3 or (imagetypecount == 3 and self.filelist[3]):
+                    print("include")
+                    include = '*'+self.filelist[imagetypecount]+'*'
+                    print(repr(include))
+                    tempic = ImageFileCollection(self.paths['source_dir'],keywords=self.keywords,glob_include=include)
+                else:
+                    print("exclude")
+                    #exclude = '*'+self.filelist[0]+'*','*'+self.filelist[1]+'*','*'+self.filelist[2]+'*'
+                    exclude = '*'+self.filelist[2]+'*'
+                    print(repr(exclude))
+                    tempic = ImageFileCollection(self.paths['source_dir'],keywords=self.keywords,glob_exclude=exclude)
                 self.copyImageTypeFname(tempic,self.directorylist[imagetypecount],self.updatefitslist[imagetypecount],
                             self.imagelist[imagetypecount],self.filelist[imagetypecount],gain,readnoise)
+                
+                if imagetypecount == 3:
+                    files = fnmatch.filter(os.listdir(self.directorylist[3]),'*'+self.filelist[0]+'*')
+                    for filename in files:
+                        filepath = os.path.join(self.directorylist[3],filename)
+                        os.remove(filepath)
+                    files = fnmatch.filter(os.listdir(self.directorylist[3]),'*'+self.filelist[1]+'*')
+                    for filename in files:
+                        filepath = os.path.join(self.directorylist[3],filename)
+                        os.remove(filepath)
+
+
             imagetypecount = imagetypecount + 1
 
     def copyImageType(self,ic,dest_dir,updatefits_list,image_type,gain,readnoise):
@@ -343,7 +369,7 @@ class ImageCollection_Model():
         self.create_deviation(dest_dir,gain,readnoise)
 
     def create_deviation(self,location,gainval,readnoiseval):
-        print("Deviation creation here")
+        
         for filename in os.listdir(location):
             if filename.endswith(".fit"):
                 pathfilename = os.path.join(location,filename)
@@ -777,14 +803,17 @@ class ImageCollection_Model():
             filter_dir = os.path.join(self.paths['science_dir'],filterType)
             ImageCollection = ImageFileCollection(filter_dir)
 
-            for fname in ImageCollection.summary['file']:
-                fname_noext = os.path.splitext(fname)[0]
-                print(repr(fname_noext))
-                if self.filemods['filename_mod_prefix']:
-                    self.reduceFlat(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['dark_removal_mod'] + self.filemods['bias_removal_mod'] + self.filemods['master_flat_name'] + '_' + filterType + '.fit',self.filemods['dark_removal_mod'] + self.filemods['bias_removal_mod'] + fname_noext + '.fit',self.filemods['reduced_removal_mod'] + fname_noext + '.fit')
-                else:
-                    self.reduceFlat(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['master_flat_name'] + '_' + filterType + self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + '.fit',fname_noext + self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + '.fit',fname_noext + self.filemods['reduced_removal_mod'] + '.fit')
-
+            try:
+                for fname in ImageCollection.summary['file']:
+                    fname_noext = os.path.splitext(fname)[0]
+                    print(repr(fname_noext))
+                    if self.filemods['filename_mod_prefix']:
+                        self.reduceFlat(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['dark_removal_mod'] + self.filemods['bias_removal_mod'] + self.filemods['master_flat_name'] + '_' + filterType + '.fit',self.filemods['dark_removal_mod'] + self.filemods['bias_removal_mod'] + fname_noext + '.fit',self.filemods['reduced_removal_mod'] + fname_noext + '.fit')
+                    else:
+                        self.reduceFlat(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['master_flat_name'] + '_' + filterType + self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + '.fit',fname_noext + self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + '.fit',fname_noext + self.filemods['reduced_removal_mod'] + '.fit')
+            except:
+                pass
+                
         print('Reduction Complete')
 
     def reductionCopyResults(self,source,destination,working):
