@@ -93,36 +93,86 @@ class ShowImageFileForm(tk.Frame):
         self.treeview.bind('<<TreeviewOpen>>',self.on_open_image_file)
 
         # header display
-        self.inputs['Header'] = w.LabelInput(
-            headerinfo, "Header",
-            field_spec=fields['Header'],
+        nh = ttk.Notebook(headerinfo)
+        fh1 = ttk.Frame(nh) # Frame for Primary Header
+        fh2 = ttk.Frame(nh) # Frame for Extension Header
+        nh.add(fh1, text='Primary Header')
+        nh.add(fh2, text='Extension Header')
+
+        nh.grid(sticky="w", row=1, column=2, padx=10, pady=10)
+
+        # Box for Primary Header
+        self.inputs['P_Header'] = w.LabelInput(
+            fh1, "Primary Header",
+            field_spec=fields['P_Header'],
             input_args={"width": 80, "height": 50}
         )
 
-        # scrollbar for header
-        self.headscrollbar = tk.Scrollbar(
-            headerinfo,
+        # scrollbar for Primary Header
+        self.p_headscrollbar = tk.Scrollbar(
+            fh1,
             orient=tk.VERTICAL,
-            command=self.inputs['Header'].input.yview)
+            command=self.inputs['P_Header'].input.yview)
 
-        self.inputs['Header'].input.config(yscrollcommand=self.headscrollbar.set)
+        self.inputs['P_Header'].input.config(yscrollcommand=self.p_headscrollbar.set)
 
-        self.inputs['Header'].input.config(state='disabled')
-        self.inputs['Header'].grid(sticky="w", row=1, column=2, padx=10, pady=10)
-        self.headscrollbar.grid(row=1,column=3,sticky='NSW')
+        self.inputs['P_Header'].input.config(state='disabled')
+        self.inputs['P_Header'].grid(sticky="w", row=0, column=0, padx=10, pady=10)
+        self.p_headscrollbar.grid(row=0,column=1,sticky='NSW')
+
+       # Box for Extension Header
+        self.inputs['Ex_Header'] = w.LabelInput(
+            fh2, "Extension Header",
+            field_spec=fields['Ex_Header'],
+            input_args={"width": 80, "height": 50}
+        )
+
+        # scrollbar for Extension Header
+        self.ex_headscrollbar = tk.Scrollbar(
+            fh2,
+            orient=tk.VERTICAL,
+            command=self.inputs['Ex_Header'].input.yview)
+
+        self.inputs['Ex_Header'].input.config(yscrollcommand=self.ex_headscrollbar.set)
+
+        self.inputs['Ex_Header'].input.config(state='disabled')
+        self.inputs['Ex_Header'].grid(sticky="w", row=0, column=0, padx=10, pady=10)
+        self.ex_headscrollbar.grid(row=0,column=1,sticky='NSW')
 
         # Image display
-        self.canvas = tk.Canvas(
-            headerinfo, width=512,height=512
-        )
-        self.canvasxsb = tk.Scrollbar(headerinfo, orient=tk.HORIZONTAL, command=self.canvas.xview)
-        self.canvasysb = tk.Scrollbar(headerinfo, orient=tk.VERTICAL, command=self.canvas.yview)
-        self.canvas.configure(yscrollcommand=self.canvasysb.set, xscrollcommand=self.canvasxsb.set)
-        
-        self.canvasxsb.grid(row=2, column=5, sticky="ews")
-        self.canvasysb.grid(row=1, column=6, sticky="nsw")
+        ni = ttk.Notebook(headerinfo)
+        fi1 = ttk.Frame(ni) # Frame for Primary Image
+        fi2 = ttk.Frame(ni) # Frame for Extension Image
+        ni.add(fi1, text='Primary Image')
+        ni.add(fi2, text='Extension Image')
 
-        self.canvas.grid(sticky=tk.N+tk.S+tk.E+tk.W, row=1, column=5, padx=10, pady=10)
+        ni.grid(sticky="w", row=1, column=5, padx=10, pady=10)
+
+        # Primary Image
+        self.p_canvas = tk.Canvas(
+            fi1, width=512,height=512
+        )
+        self.p_canvasxsb = tk.Scrollbar(fi1, orient=tk.HORIZONTAL, command=self.p_canvas.xview)
+        self.p_canvasysb = tk.Scrollbar(fi1, orient=tk.VERTICAL, command=self.p_canvas.yview)
+        self.p_canvas.configure(yscrollcommand=self.p_canvasysb.set, xscrollcommand=self.p_canvasxsb.set)
+        
+        self.p_canvasxsb.grid(row=1, column=0, sticky="ews")
+        self.p_canvasysb.grid(row=0, column=1, sticky="nsw")
+
+        self.p_canvas.grid(sticky=tk.N+tk.S+tk.E+tk.W, row=0, column=0, padx=10, pady=10)
+
+        # Extension Image
+        self.ex_canvas = tk.Canvas(
+            fi2, width=512,height=512
+        )
+        self.ex_canvasxsb = tk.Scrollbar(fi2, orient=tk.HORIZONTAL, command=self.ex_canvas.xview)
+        self.ex_canvasysb = tk.Scrollbar(fi2, orient=tk.VERTICAL, command=self.ex_canvas.yview)
+        self.ex_canvas.configure(yscrollcommand=self.ex_canvasysb.set, xscrollcommand=self.ex_canvasxsb.set)
+        
+        self.ex_canvasxsb.grid(row=1, column=0, sticky="ews")
+        self.ex_canvasysb.grid(row=0, column=1, sticky="nsw")
+
+        self.ex_canvas.grid(sticky=tk.N+tk.S+tk.E+tk.W, row=0, column=0, padx=10, pady=10)
 
         headerinfo.grid(row=0,column=0,sticky="we")
 
@@ -145,35 +195,73 @@ class ShowImageFileForm(tk.Frame):
         selected_id = self.treeview.selection()[0]
         self.callbacks['on_open_image_file'](selected_id)
 
-    def load_header(self,header,*args):
+    def load_p_header(self,header,*args):
 
-        self.inputs['Header'].input.config(state='normal')
-        self.inputs['Header'].set(header)
-        self.inputs['Header'].input.config(state='disabled')
+        self.inputs['P_Header'].input.config(state='normal')
+        self.inputs['P_Header'].set(header)
+        self.inputs['P_Header'].input.config(state='disabled')
 
-    def load_image(self,image,*args):
+    def load_ex_header(self,header,*args):
+
+        self.inputs['Ex_Header'].input.config(state='normal')
+        self.inputs['Ex_Header'].set(header)
+        self.inputs['Ex_Header'].input.config(state='disabled')
+
+    def load_p_image(self,image = None,*args):
+
+        print(repr(image))
+        
+        if image is None:
+            return[]
 
         print(image.shape)
         print(repr(image))
 
-        width = self.canvas.winfo_reqwidth()       
-        height = self.canvas.winfo_reqheight()  
+        width = self.p_canvas.winfo_reqwidth()       
+        height = self.p_canvas.winfo_reqheight()  
         
-        plt.imsave("tempimgfile.png", image, cmap=plt.cm.gray)
+        plt.imsave("temppimgfile.png", image, cmap=plt.cm.gray)
 
-        img = Image.open("tempimgfile.png")
+        img = Image.open("temppimgfile.png")
         img = img.resize((width,height), Image.ANTIALIAS)
 
         photo = ImageTk.PhotoImage(img)
         
         print(repr(photo))
-        self.canvas.photolist = []
+        self.p_canvas.photolist = []
 
-        self.canvas.create_image(0,0,image=photo,anchor="nw")
-        self.canvas.configure(scrollregion=(0,0,width,height))
+        self.p_canvas.create_image(0,0,image=photo,anchor="nw")
+        self.p_canvas.configure(scrollregion=(0,0,width,height))
         
-        self.canvas.photolist.append(photo)
-     
+        self.p_canvas.photolist.append(photo)
+
+    def load_ex_image(self,image = None,*args):
+
+        print(repr(image))
+        
+        if image is None:
+            return[]
+
+        print(image.shape)
+        print(repr(image))
+
+        width = self.ex_canvas.winfo_reqwidth()       
+        height = self.ex_canvas.winfo_reqheight()  
+        
+        plt.imsave("tempeximgfile.png", image, cmap=plt.cm.gray)
+
+        img = Image.open("tempeximgfile.png")
+        img = img.resize((width,height), Image.ANTIALIAS)
+
+        photo = ImageTk.PhotoImage(img)
+        
+        print(repr(photo))
+        self.ex_canvas.photolist = []
+
+        self.ex_canvas.create_image(0,0,image=photo,anchor="nw")
+        self.ex_canvas.configure(scrollregion=(0,0,width,height))
+        
+        self.ex_canvas.photolist.append(photo)     
  
     def sort(self,treeview,col):
         itemlist = list(treeview.get_children(''))

@@ -119,7 +119,7 @@ class Application(tk.Tk):
         )
         self.directoriesconfigurationform.grid(row=0,padx=10,sticky='NSEW')
 
-         # General Configuration form
+        # General Configuration form
         self.generalconfigurationform = v.GeneralConfigurationForm(
             self,
             m.Configuration_Model.fields['general_details'],
@@ -314,8 +314,12 @@ class Application(tk.Tk):
             image = None
         else:
             try:
-                header = self.imagefile_model.get_fileheader(filename)
-                image = self.imagefile_model.get_fileimage(filename)
+                header = self.imagefile_model.get_fileheader(filename,0)
+                print(repr(header))
+                ex_header = self.imagefile_model.get_fileheader(filename,1)
+                print(repr(ex_header))
+                image = self.imagefile_model.get_fileimage(filename,0)
+                ex_image = self.imagefile_model.get_fileimage(filename,1)
             except Exception as e:
                 messagebox.showerror(
                     title='Error',
@@ -323,8 +327,10 @@ class Application(tk.Tk):
                     detail=str(e)
                 )
                 return
-        self.imagefileform.load_header(header)
-        self.imagefileform.load_image(image)
+        self.imagefileform.load_p_header(header)
+        self.imagefileform.load_ex_header(ex_header)
+        self.imagefileform.load_p_image(image)
+        self.imagefileform.load_ex_image(ex_image)
         self.imagefileform.tkraise()
 
     def populate_imagefileform(self):
@@ -539,7 +545,8 @@ class Application(tk.Tk):
         updatefitsfilterlist = (self.config_model.config['flat_details']['update_fits_filter'],
                         self.config_model.config['science_details']['update_fits_filter'],
                         )
-
+        ccd_details = (float(self.config_model.config['general_details']['ccd_gain']),
+                         float(self.config_model.config['general_details']['ccd_readnoise']))
 
         flatfilterlist = (self.config_model.config['flat_details']['filename_text_filter'].split())
 
@@ -564,7 +571,7 @@ class Application(tk.Tk):
                 paths['source_dir'] = temp
 
                 self.collection = m.ImageCollection_Model(keywords,paths,filemods,imagelist,filelist,usefitslist,updatefitslist,
-                        usefitsfilterlist,updatefitsfilterlist,flatfilterlist,sciencefilterlist)
+                        usefitsfilterlist,updatefitsfilterlist,flatfilterlist,sciencefilterlist,ccd_details)
 
                 self.collection.status.trace('w', self.reduction_status)
 
@@ -575,7 +582,7 @@ class Application(tk.Tk):
             print('Single Pass')
 
             self.collection = m.ImageCollection_Model(keywords,paths,filemods,imagelist,filelist,usefitslist,updatefitslist,
-                    usefitsfilterlist,updatefitsfilterlist,flatfilterlist,sciencefilterlist)
+                    usefitsfilterlist,updatefitsfilterlist,flatfilterlist,sciencefilterlist,ccd_details)
 
             self.collection.status.trace('w', self.reduction_status)
 

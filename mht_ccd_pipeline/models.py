@@ -25,28 +25,36 @@ class ImageFile_Model:
         "Image Type":{'req':True,'type':FT.string},
         "Filter":{'req':True,'type':FT.string},
         "Exposure":{'req':True,'type':FT.decimal},
-        "Header": {'req': False, 'type': FT.long_string},
-        "Image": {'req': False, 'type': FT.long_string},
+        "P_Header": {'req': False, 'type': FT.long_string},
+        "Ex_Header": {'req': False, 'type': FT.long_string},
+        "P_Image": {'req': False, 'type': FT.long_string},
+        "Ex_Image": {'req': False, 'type': FT.long_string},
         "Source": {'req': False, 'type': FT.string},
     }
 
     def __init__(self,filename):
         self.filename = filename
 
-    def get_fileheader(self,filename):
+    def get_fileheader(self,filename,hdu = 0):
         """ Read FITS header from file """
         if not os.path.exists(filename):
-            return []
-        ccd = CCDData.read(filename,unit=u.adu)
+            return [None]
+        try:
+            ccd = CCDData.read(filename,hdu=hdu,unit='adu')
+        except:
+            return [None]
         self.fields['Header'] = ccd.header
         
         return self.fields['Header']
 
-    def get_fileimage(self,filename):
+    def get_fileimage(self,filename,hdu = 0):
         """ Read FITS image from file """
         if not os.path.exists(filename):
-            return []
-        ccd = CCDData.read(filename,unit=u.adu)
+            return [None]
+        try:
+            ccd = CCDData.read(filename,hdu=hdu,unit='adu')
+        except:
+            return [None]
         self.fields['Image'] = ccd.data
         return self.fields['Image']
 
@@ -215,7 +223,7 @@ class ImageCollection_Model():
     """Image collection model"""
 
     def __init__(self,keywords,paths,filemods,image_list,file_list,usefits_list,updatefits_list,
-                            usefitsfilter_list,updatefitsfilter_list,flatfilter_list,sciencefilter_list):
+                            usefitsfilter_list,updatefitsfilter_list,flatfilter_list,sciencefilter_list,ccd_details):
         
         self.paths = paths
         self.filemods = filemods
@@ -229,6 +237,7 @@ class ImageCollection_Model():
         self.flatfilterlist = flatfilter_list
         self.sciencefilterlist = sciencefilter_list
         self.status = tk.StringVar()
+        self.ccd_details = ccd_details
                 
         self.ic = ImageFileCollection(self.paths['source_dir'],keywords=self.keywords)
         self.table = self.ic.summary
@@ -296,28 +305,54 @@ class ImageCollection_Model():
                     except KeyError:
                         print("No %s in Header",self.imagelist[1])
 
-    def copyImageTypes(self):
+    def copyImageTypes(self,gain,readnoise):
         imagetypecount = 0
         while imagetypecount < len(self.imagelist):
             
             if self.usefitslist[imagetypecount] == "True":
-                self.copyImageType(self.ic,self.directorylist[imagetypecount],self.updatefitslist[imagetypecount],self.imagelist[imagetypecount])
+                self.copyImageType(self.ic,self.directorylist[imagetypecount],self.updatefitslist[imagetypecount],self.imagelist[imagetypecount]
+                        ,gain,readnoise)
             else:
                 tempic = ImageFileCollection(self.paths['source_dir'],keywords=self.keywords,glob_include='*'+self.filelist[imagetypecount]+'*')
                 self.copyImageTypeFname(tempic,self.directorylist[imagetypecount],self.updatefitslist[imagetypecount],
-                            self.imagelist[imagetypecount],self.filelist[imagetypecount])
+                            self.imagelist[imagetypecount],self.filelist[imagetypecount],gain,readnoise)
             imagetypecount = imagetypecount + 1
 
-    def copyImageType(self,ic,dest_dir,updatefits_list,image_type):
+    def copyImageType(self,ic,dest_dir,updatefits_list,image_type,gain,readnoise):
         #imagetyp need changing here to be the item from keywords[0]
         for hdu in ic.hdus(save_location=dest_dir, imagetyp=image_type, overwrite=True):
-            pass
+            try:
+                units = hdu.header['bunit']
+            except:
+                hdu.header['bunit'] = 'adu'
 
-    def copyImageTypeFname(self,ic,dest_dir,updatefits_list,image_list,file_list):
+        self.create_deviation(dest_dir,gain,readnoise)
+
+    def copyImageTypeFname(self,ic,dest_dir,updatefits_list,image_list,file_list,gain,readnoise):
         
         for hdu in ic.hdus(save_location=dest_dir, overwrite=True):
+            try:
+                units = hdu.header['bunit']
+            except:
+                hdu.header['bunit'] = 'adu'
+            
             if updatefits_list == "True":
                 hdu.header[self.keywords[0]] = image_list
+                pass
+
+        self.create_deviation(dest_dir,gain,readnoise)
+
+    def create_deviation(self,location,gainval,readnoiseval):
+        print("Deviation creation here")
+        for filename in os.listdir(location):
+            if filename.endswith(".fit"):
+                pathfilename = os.path.join(location,filename)
+                data = CCDData.read(pathfilename)
+                data_deviation = ccdproc.create_deviation(data,gain = gainval*u.electron/u.adu,readnoise = readnoiseval*u.electron)
+                gain_corrected = ccdproc.gain_correct(data_deviation, gain = gainval*u.electron/u.adu)
+                gain_corrected.write(pathfilename,overwrite=True)
+
+
 
     def fileNames(self,ImageCollection,keys,include_path= False):
         names = ImageCollection.files_filtered(**keys,include_path= include_path)
@@ -328,7 +363,7 @@ class ImageCollection_Model():
             dest_dir = os.path.join(source_dir,f)
             if not os.path.exists(dest_dir):
                 os.makedirs(dest_dir)
-                for hdu in ImageCollection.hdus(save_location=dest_dir, filter=f, overwrite=True):
+                for heads in ImageCollection.headers(save_location=dest_dir, filter=f, overwrite=True):
                     pass
 
     def copyFiltersFname(self, source_dir, filters, update):
@@ -338,9 +373,9 @@ class ImageCollection_Model():
             if not os.path.exists(dest_dir):
                 os.makedirs(dest_dir)
                 ImageCollection = ImageFileCollection(source_dir,keywords=self.keywords,glob_include='*'+filt+'.*')
-                for hdu in ImageCollection.hdus(save_location=dest_dir, overwrite=True):
+                for heads in ImageCollection.headers(save_location=dest_dir, overwrite=True):
                     if update == 'True':
-                        hdu.header[self.keywords[1]] = filt
+                        heads[self.keywords[1]] = filt
 
     def copyExposures(self,ImageCollection, source_dir, exposures):
         for e in exposures:
@@ -348,7 +383,7 @@ class ImageCollection_Model():
             dest_dir = os.path.join(source_dir,dir_name)
             if not os.path.exists(dest_dir):
                 os.makedirs(dest_dir)
-                for hdu in ImageCollection.hdus(save_location=dest_dir, exposure=e, overwrite=True):
+                for heads in ImageCollection.headers(save_location=dest_dir, exposure=e, overwrite=True):
                     pass
 
     def createMasters(self,ImageCollection,Directory,Filename,Masterheader):
@@ -357,7 +392,8 @@ class ImageCollection_Model():
             
         for fname in fnames:
             path_file = os.path.join(ImageCollection.location,fname)
-            ccd = CCDData.read(path_file, unit = u.adu)
+            #ccd = CCDData.read(path_file, unit = u.adu)
+            ccd = CCDData.read(path_file)
             master_list.append(ccd)
         
         master = ccdproc.combine(master_list, method='median')
@@ -371,9 +407,11 @@ class ImageCollection_Model():
 
     def removeBias(self,Bias_Directory,Master_Directory,Dest_Directory, BiasFilename, SourceFilename, DestFilename, MasterDescription):
         master_file = os.path.join(Master_Directory,SourceFilename)
-        ccd = CCDData.read(master_file, unit = u.adu)
+        #ccd = CCDData.read(master_file, unit = u.adu)
+        ccd = CCDData.read(master_file)
         bias_file = os.path.join(Bias_Directory,BiasFilename)
-        master = CCDData.read(bias_file, unit = u.adu)
+        #master = CCDData.read(bias_file, unit = u.adu)
+        master = CCDData.read(bias_file)
         master_br = ccdproc.subtract_bias(ccd,master)
         master_br.header[self.keywords[0]]= MasterDescription + ' Bias Sub'
 
@@ -384,9 +422,11 @@ class ImageCollection_Model():
 
     def removeDark(self,Dark_Directory,Master_Directory,Dest_Directory, DarkFilename, SourceFilename, DestFilename, MasterDescription):
         master_file = os.path.join(Master_Directory,SourceFilename)
-        ccd = CCDData.read(master_file, unit = u.adu)
+        #ccd = CCDData.read(master_file, unit = u.adu)
+        ccd = CCDData.read(master_file)
         dark_file = os.path.join(Dark_Directory,DarkFilename)
-        master = CCDData.read(dark_file, unit = u.adu)
+        #master = CCDData.read(dark_file, unit = u.adu)
+        master = CCDData.read(dark_file)
         master_brds = ccdproc.subtract_dark(ccd=ccd,master=master,exposure_time=self.keywords[3],exposure_unit=u.second,scale=True)
         master_brds.header[self.keywords[0]]= MasterDescription + ' Dark Rem'
         
@@ -396,9 +436,11 @@ class ImageCollection_Model():
 
     def reduceFlat(self,Flat_Directory, Source_Directory, Destination_Directory, FlatFilename,SourceFilename, DestFilename):
         master_file = os.path.join(Source_Directory,SourceFilename)
-        ccd = CCDData.read(master_file, unit = u.adu)
+        #ccd = CCDData.read(master_file, unit = u.adu)
+        ccd = CCDData.read(master_file)
         flat_file = os.path.join(Flat_Directory, FlatFilename)
-        master = CCDData.read(flat_file, unit = u.adu)
+        #master = CCDData.read(flat_file, unit = u.adu)
+        master = CCDData.read(flat_file)
         master_red = ccdproc.flat_correct(ccd=ccd, flat=master)
         master_red.header[self.keywords[0]] = self.imagelist[3]+' Reduced'
         
@@ -604,7 +646,7 @@ class ImageCollection_Model():
         """Copy Image Files"""
 
         print('Copy Images')
-        self.copyImageTypes()
+        self.copyImageTypes(self.ccd_details[0],self.ccd_details[1])
 
     def reductionCopyExpFilt(self):
         """Copy Exposures and Filters"""
