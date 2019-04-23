@@ -320,6 +320,8 @@ class Application(tk.Tk):
                 print(repr(ex_header))
                 image = self.imagefile_model.get_fileimage(filename,0)
                 ex_image = self.imagefile_model.get_fileimage(filename,1)
+                print('Here')
+                print(repr(image))
             except Exception as e:
                 messagebox.showerror(
                     title='Error',
@@ -491,6 +493,10 @@ class Application(tk.Tk):
 
         paths = {}
         paths['source_dir'] = self.config_model.config['directories']['source_dir']
+        paths['working_dir'] = self.config_model.config['directories']['working_dir']
+        paths['base_bias_dir'] = self.config_model.config['directories']['bias_dir']
+        paths['base_dark_dir'] = self.config_model.config['directories']['dark_dir']
+        paths['base_flat_dir'] = self.config_model.config['directories']['flat_dir']
         paths['bias_dir'] = os.path.join(
                                 self.config_model.config['directories']['working_dir'],
                                 self.config_model.config['directories']['bias_dir'])
@@ -598,16 +604,26 @@ class Application(tk.Tk):
 
         if self.ccdreductionform.steps['CreateDir'].get() == 'True':
             m.ImageCollection_Model.reductionCreateDirectories(self.collection)
+        
+        # copy all from same directory or calibration from External Directory
         if self.ccdreductionform.steps['CopyImages'].get() == 'True':
             m.ImageCollection_Model.reductionCopyImages(self.collection)
+            if self.generalconfigurationform.inputs['File Use'].get() == 'Calibration':
+                m.ImageCollection_Model.reductionCopyCalibrations(self.collection,self.generalconfigurationform.inputs['External Directory'].get())
 
         m.ImageCollection_Model.reductionSetupCollections(self.collection)
         
         if self.ccdreductionform.steps['CopyImages'].get() == 'True':
             m.ImageCollection_Model.reductionCopyExpFilt(self.collection)
 
+        # create masters or copy from external directory
         if self.ccdreductionform.steps['CreateMasters'].get() == 'True':
-            m.ImageCollection_Model.reductionCreateMasters(self.collection)
+            if self.generalconfigurationform.inputs['File Use'].get() != 'Masters':
+                m.ImageCollection_Model.reductionCreateMasters(self.collection)
+            elif self.generalconfigurationform.inputs['File Use'].get() == 'Masters':
+                m.ImageCollection_Model.reductionCopyMasters(self.collection,self.generalconfigurationform.inputs['External Directory'].get())
+
+
         if self.ccdreductionform.steps['BiasRemoval'].get() == 'True':
             m.ImageCollection_Model.reductionBiasRemoval(self.collection)
         if self.ccdreductionform.steps['DarkRemoval'].get() == 'True':

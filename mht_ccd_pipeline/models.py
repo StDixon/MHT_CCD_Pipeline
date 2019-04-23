@@ -129,7 +129,9 @@ class Configuration_Model:
         'fits_header_CCD_Temp': {'req': True,'type':FT.string,'value': 'TEMP'},
         'fits_header_exposure': {'req': True,'type':FT.string,'value': 'EXPOSURE'},
         'ccd_gain': {'req': True,'type':FT.decimal,'value': 1.43,'min': 0, 'inc': .001},
-        'ccd_readnoise': {'req': True,'type':FT.decimal,'value': 1.2,'min': 0, 'inc': .001},
+        'ccd_readnoise': {'req': True,'type':FT.decimal,'value': 17.8,'min': 0, 'inc': .001},
+        'file_usage': {'req': True,'type':FT.string_list,'values':['Combined', 'Calibration', 'Masters']},
+        'ext_directory': {'req': False,'type':FT.string,'value': ''},
     }
 
     bias_details = {
@@ -137,6 +139,7 @@ class Configuration_Model:
         'filename_text': {'req': True,'type':FT.string,'value': 'bias'},
         'use_fits': {'req': False,'type':FT.rstring,'value':'True'},
         'update_fits': {'req': True,'type':FT.boolean,'value':'True'},
+        'perform_median_filter': {'req': True,'type':FT.boolean,'value':'False'},
     }
 
     dark_details = {
@@ -144,6 +147,7 @@ class Configuration_Model:
         'filename_text': {'req': True,'type':FT.string,'value': 'dark'},
         'use_fits': {'req': False,'type':FT.rstring,'value':'True'},
         'update_fits': {'req': True,'type':FT.boolean,'value':'True'},
+        'perform_median_filter': {'req': True,'type':FT.boolean,'value':'False'},
     }
 
     flat_details = {
@@ -154,6 +158,7 @@ class Configuration_Model:
         'filename_text_filter': {'req': True,'type':FT.string,'value': 'Ha B R V'},
         'use_fits_filter': {'req': False,'type':FT.rstring,'value':'True'},
         'update_fits_filter': {'req': True,'type':FT.boolean,'value':'True'},
+        'perform_median_filter': {'req': True,'type':FT.boolean,'value':'False'},
     }
 
     science_details = {
@@ -268,7 +273,10 @@ class ImageCollection_Model():
     def copyFiles(self,source_dir,dest_dir):
         for file in os.listdir(source_dir):
             src_file = os.path.join(source_dir,file)
-            shutil.copy(src_file,dest_dir)
+            try:
+                shutil.copy(src_file,dest_dir)
+            except:
+                pass
 
     def moveImageType(self,source_dir,image_type,dest_dir):
         for file in os.listdir(source_dir):
@@ -368,6 +376,20 @@ class ImageCollection_Model():
 
         self.create_deviation(dest_dir,gain,readnoise)
 
+    def copyImageTypesExt(self,source):
+
+        dest_dir = self.paths['bias_dir']
+        source_dir = os.path.join(source,self.paths['base_bias_dir'])
+        self.copyFiles(source_dir,dest_dir)
+
+        dest_dir = self.paths['dark_dir']
+        source_dir = os.path.join(source,self.paths['base_dark_dir'])
+        self.copyFiles(source_dir,dest_dir)
+
+        dest_dir = self.paths['flat_dir']
+        source_dir = os.path.join(source,self.paths['base_flat_dir'])
+        self.copyFiles(source_dir,dest_dir)
+
     def create_deviation(self,location,gainval,readnoiseval):
         
         for filename in os.listdir(location):
@@ -377,8 +399,6 @@ class ImageCollection_Model():
                 data_deviation = ccdproc.create_deviation(data,gain = gainval*u.electron/u.adu,readnoise = readnoiseval*u.electron)
                 gain_corrected = ccdproc.gain_correct(data_deviation, gain = gainval*u.electron/u.adu)
                 gain_corrected.write(pathfilename,overwrite=True)
-
-
 
     def fileNames(self,ImageCollection,keys,include_path= False):
         names = ImageCollection.files_filtered(**keys,include_path= include_path)
@@ -444,7 +464,6 @@ class ImageCollection_Model():
         mbr_file = os.path.join(Dest_Directory,DestFilename)
 
         master_br.write(mbr_file, overwrite=True)
-
 
     def removeDark(self,Dark_Directory,Master_Directory,Dest_Directory, DarkFilename, SourceFilename, DestFilename, MasterDescription):
         master_file = os.path.join(Master_Directory,SourceFilename)
@@ -647,13 +666,22 @@ class ImageCollection_Model():
         self.flat_ic = ImageFileCollection(self.paths['flat_dir'], self.keywords)
         self.flat_table = self.flat_ic.summary
 
-        self.flat_filters = np.unique(self.flat_table[self.keywords[1]].data).tolist()
-        self.flat_exposures = np.unique(self.flat_table[self.keywords[3]].data).tolist()
+        try:
+            self.flat_filters = np.unique(self.flat_table[self.keywords[1]].data).tolist()
+        except:
+            self.flat_filters = []
+        try:
+            self.flat_exposures = np.unique(self.flat_table[self.keywords[3]].data).tolist()
+        except:
+            self.flat_exposures = []
 
         self.dark_ic = ImageFileCollection(self.paths['dark_dir'], self.keywords)
         self.dark_table = self.dark_ic.summary
 
-        self.dark_exposures = np.unique(self.dark_table[self.keywords[3]].data).tolist()
+        try:
+            self.dark_exposures = np.unique(self.dark_table[self.keywords[3]].data).tolist()
+        except:
+            self.dark_exposures = []
 
         self.science_ic = ImageFileCollection(self.paths['science_dir'], self.keywords)
         self.science_table = self.science_ic.summary
@@ -673,6 +701,12 @@ class ImageCollection_Model():
 
         print('Copy Images')
         self.copyImageTypes(self.ccd_details[0],self.ccd_details[1])
+
+    def reductionCopyCalibrations(self,source):
+        """Copy Calibration Files from External Directory"""
+        
+        print('Copy External Calibrations')
+        self.copyImageTypesExt(source)
 
     def reductionCopyExpFilt(self):
         """Copy Exposures and Filters"""
@@ -715,6 +749,29 @@ class ImageCollection_Model():
             ImageCollection = ImageFileCollection(filter_dir)
             self.createMasters(ImageCollection,self.paths['master_dir'],masterFile,
                         self.filemods['master_flat_header_value'])
+
+    def reductionCopyMasters(self,source):
+        """Copy Masters From External Directory"""
+
+        print('Copy External Masters')
+
+        temp = self.paths['master_dir']
+
+        if os.path.isdir(temp):
+            shutil.rmtree(temp)
+        shutil.copytree(source,temp)
+
+        self.flat_ic = ImageFileCollection(self.paths['master_dir'], self.keywords)
+        self.flat_table = self.flat_ic.summary
+
+        try:
+            self.flat_filters = np.unique(self.flat_table[self.keywords[1]].data).tolist()
+        except:
+            self.flat_filters = []
+
+        # remove None from list
+        if self.flat_filters[0] is None:
+            del self.flat_filters[0]
 
     def reductionBiasRemoval(self):
         """Perform Bias Removal"""

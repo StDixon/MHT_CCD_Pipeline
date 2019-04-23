@@ -4,6 +4,8 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 from astropy.visualization import astropy_mpl_style
 
+import numpy as np
+
 from astropy.utils.data import get_pkg_data_filename
 from astropy.io import fits
 
@@ -120,7 +122,8 @@ class ShowImageFileForm(tk.Frame):
         self.inputs['P_Header'].grid(sticky="w", row=0, column=0, padx=10, pady=10)
         self.p_headscrollbar.grid(row=0,column=1,sticky='NSW')
 
-       # Box for Extension Header
+
+        # Box for Extension Header
         self.inputs['Ex_Header'] = w.LabelInput(
             fh2, "Extension Header",
             field_spec=fields['Ex_Header'],
@@ -156,11 +159,39 @@ class ShowImageFileForm(tk.Frame):
         self.p_canvasysb = tk.Scrollbar(fi1, orient=tk.VERTICAL, command=self.p_canvas.yview)
         self.p_canvas.configure(yscrollcommand=self.p_canvasysb.set, xscrollcommand=self.p_canvasxsb.set)
         
-        self.p_canvasxsb.grid(row=1, column=0, sticky="ews")
-        self.p_canvasysb.grid(row=0, column=1, sticky="nsw")
+        self.p_canvasxsb.grid(row=201, column=0, sticky="ews")
+        self.p_canvasysb.grid(row=0, rowspan=200, column=1, sticky="nsw")
 
-        self.p_canvas.grid(sticky=tk.N+tk.S+tk.E+tk.W, row=0, column=0, padx=10, pady=10)
+        self.p_canvas.grid(sticky=tk.N+tk.S+tk.E+tk.W, row=0, rowspan=200, column=0, padx=10, pady=10)
 
+        # Primary Data
+        self.p_datamin = tk.DoubleVar()
+        self.p_datamax = tk.DoubleVar()
+        self.p_datamean = tk.DoubleVar()
+        self.p_datamedian = tk.DoubleVar()
+        self.p_datastddev = tk.DoubleVar()
+
+        tk.Label(fi1,text='Min:').grid(sticky=tk.E, row=50, column=3, padx=10, pady=10)
+        tk.Label(fi1,text='Max:').grid(sticky=tk.E, row=51, column=3, padx=10, pady=10)
+        tk.Label(fi1,text='Mean:').grid(sticky=tk.E, row=52, column=3, padx=10, pady=10)
+        tk.Label(fi1,text='Median:').grid(sticky=tk.E, row=53, column=3, padx=10, pady=10)
+        tk.Label(fi1,text='StdDev:').grid(sticky=tk.E, row=54, column=3, padx=10, pady=10)
+
+        minval = tk.Label(fi1,textvariable=self.p_datamin)
+        minval.grid(row=50, column=4, padx=10, pady=10)
+
+        maxval = tk.Label(fi1,textvariable=self.p_datamax)
+        maxval.grid(row=51, column=4, padx=10, pady=10)
+
+        medianval = tk.Label(fi1,textvariable=self.p_datamedian)
+        medianval.grid(row=52, column=4, padx=10, pady=10)
+
+        meanval = tk.Label(fi1,textvariable=self.p_datamean)
+        meanval.grid(row=53, column=4, padx=10, pady=10)
+
+        stddevval = tk.Label(fi1,textvariable=self.p_datastddev)
+        stddevval.grid(row=54, column=4, padx=10, pady=10)
+        
         # Extension Image
         self.ex_canvas = tk.Canvas(
             fi2, width=512,height=512
@@ -169,10 +200,38 @@ class ShowImageFileForm(tk.Frame):
         self.ex_canvasysb = tk.Scrollbar(fi2, orient=tk.VERTICAL, command=self.ex_canvas.yview)
         self.ex_canvas.configure(yscrollcommand=self.ex_canvasysb.set, xscrollcommand=self.ex_canvasxsb.set)
         
-        self.ex_canvasxsb.grid(row=1, column=0, sticky="ews")
-        self.ex_canvasysb.grid(row=0, column=1, sticky="nsw")
+        self.ex_canvasxsb.grid(row=201, column=0, sticky="ews")
+        self.ex_canvasysb.grid(row=0, rowspan=200, column=1, sticky="nsw")
 
-        self.ex_canvas.grid(sticky=tk.N+tk.S+tk.E+tk.W, row=0, column=0, padx=10, pady=10)
+        self.ex_canvas.grid(sticky=tk.N+tk.S+tk.E+tk.W, row=0, rowspan=200, column=0, padx=10, pady=10)
+
+        # Extension Data
+        self.ex_datamin = tk.DoubleVar()
+        self.ex_datamax = tk.DoubleVar()
+        self.ex_datamean = tk.DoubleVar()
+        self.ex_datamedian = tk.DoubleVar()
+        self.ex_datastddev = tk.DoubleVar()
+
+        tk.Label(fi2,text='Min:').grid(sticky=tk.E, row=50, column=3, padx=10, pady=10)
+        tk.Label(fi2,text='Max:').grid(sticky=tk.E, row=51, column=3, padx=10, pady=10)
+        tk.Label(fi2,text='Mean:').grid(sticky=tk.E, row=52, column=3, padx=10, pady=10)
+        tk.Label(fi2,text='Median:').grid(sticky=tk.E, row=53, column=3, padx=10, pady=10)
+        tk.Label(fi2,text='StdDev:').grid(sticky=tk.E, row=54, column=3, padx=10, pady=10)
+
+        minval = tk.Label(fi2,textvariable=self.ex_datamin)
+        minval.grid(row=50, column=4, padx=10, pady=10)
+
+        maxval = tk.Label(fi2,textvariable=self.ex_datamax)
+        maxval.grid(row=51, column=4, padx=10, pady=10)
+
+        medianval = tk.Label(fi2,textvariable=self.ex_datamedian)
+        medianval.grid(row=52, column=4, padx=10, pady=10)
+
+        meanval = tk.Label(fi2,textvariable=self.ex_datamean)
+        meanval.grid(row=53, column=4, padx=10, pady=10)
+
+        stddevval = tk.Label(fi2,textvariable=self.ex_datastddev)
+        stddevval.grid(row=54, column=4, padx=10, pady=10)
 
         headerinfo.grid(row=0,column=0,sticky="we")
 
@@ -235,6 +294,12 @@ class ShowImageFileForm(tk.Frame):
         
         self.p_canvas.photolist.append(photo)
 
+        self.p_datamin.set(format(np.min(image),'.2f'))
+        self.p_datamax.set(format(np.max(image),'.2f'))
+        self.p_datamean.set(format(np.mean(image),'.2f'))
+        self.p_datamedian.set(format(np.median(image),'.2f'))
+        self.p_datastddev.set(format(np.std(image),'.2f'))
+
     def load_ex_image(self,image = None,*args):
 
         print(repr(image))
@@ -262,7 +327,13 @@ class ShowImageFileForm(tk.Frame):
         self.ex_canvas.configure(scrollregion=(0,0,width,height))
         
         self.ex_canvas.photolist.append(photo)     
- 
+
+        self.ex_datamin.set(format(np.min(image),'.2f'))
+        self.ex_datamax.set(format(np.max(image),'.2f'))
+        self.ex_datamean.set(format(np.mean(image),'.2f'))
+        self.ex_datamedian.set(format(np.median(image),'.2f'))
+        self.ex_datastddev.set(format(np.std(image),'.2f'))
+
     def sort(self,treeview,col):
         itemlist = list(treeview.get_children(''))
         itemlist.sort(key=lambda x:treeview.set(x,col))
@@ -762,6 +833,19 @@ class GeneralConfigurationForm(tk.Frame):
                 label_args={'style':'GeneralDetails.TLabel'})
         self.inputs['CCD Readnoise'].grid(row=2, column=1)
 
+        # Line 4
+        self.inputs['File Use'] = w.LabelInput(
+                GeneralDetails, "File Use",
+                field_spec=fields['file_usage'],
+                label_args={'style':'GeneralDetails.TLabel'})
+        self.inputs['File Use'].grid(row=3, column=0)
+
+        self.inputs['External Directory'] = w.LabelInput(
+                GeneralDetails, "External Directory",
+                field_spec=fields['ext_directory'],
+                label_args={'style':'GeneralDetails.TLabel'})
+        self.inputs['External Directory'].grid(row=3, column=1)
+
         GeneralDetails.grid(row=0, column=0, sticky=tk.W + tk.E)
  
         self.reset()
@@ -791,6 +875,8 @@ class GeneralConfigurationForm(tk.Frame):
         self.inputs['FITS Header CCD Temp'].set(fields['fits_header_CCD_temp'])
         self.inputs['CCD Gain'].set(fields['ccd_gain'])
         self.inputs['CCD Readnoise'].set(fields['ccd_readnoise'])
+        self.inputs['File Use'].set(fields['file_usage'])
+        self.inputs['External Directory'].set(fields['ext_directory'])
 
     def save_form(self,fields):
         """ Save Form"""
@@ -801,6 +887,8 @@ class GeneralConfigurationForm(tk.Frame):
         fields['fits_header_CCD_temp'] = self.inputs['FITS Header CCD Temp'].get()
         fields['ccd_gain'] = self.inputs['CCD Gain'].get()
         fields['ccd_readnoise'] = self.inputs['CCD Readnoise'].get()
+        fields['file_usage'] = self.inputs['File Use'].get()
+        fields['ext_directory'] = self.inputs['External Directory'].get()
 
         return fields
 
@@ -876,6 +964,14 @@ class BiasDetailsConfigurationForm(tk.Frame):
                 input_args={'style':'BiasDetails.TCheckbutton'})
         self.inputs['Update FITS Header'].grid(row=2, column=0, columnspan=3)
 
+        #Line 4
+        self.inputs['Median Filter'] = w.LabelInput(
+                BiasDetails, "Perform Median Filter",
+                field_spec=fields['perform_median_filter'],
+                label_args={'style':'BiasDetails.TLabel'},
+                input_args={'style':'BiasDetails.TCheckbutton'})
+        self.inputs['Median Filter'].grid(row=3, column=0, columnspan=3)
+
         BiasDetails.grid(row=0, column=0, sticky=tk.W + tk.E)
  
         self.reset()
@@ -903,6 +999,7 @@ class BiasDetailsConfigurationForm(tk.Frame):
         self.inputs['Filename Text'].set(fields['filename_text'])
         self.inputs['Use FITS Header'].set(fields['use_fits'])
         self.inputs['Update FITS Header'].set(fields.as_bool('update_fits'))
+        self.inputs['Median Filter'].set(fields.as_bool('perform_median_filter'))
 
     def save_form(self,fields):
         """ Save Form"""
@@ -911,6 +1008,7 @@ class BiasDetailsConfigurationForm(tk.Frame):
         fields['filename_text'] = self.inputs['Filename Text'].get()
         fields['use_fits'] = self.inputs['Use FITS Header'].get()
         fields['update_fits'] = self.inputs['Update FITS Header'].get()
+        fields['perform_median_filter'] = self.inputs['Median Filter'].get()
 
         return fields
 
@@ -985,6 +1083,14 @@ class DarkDetailsConfigurationForm(tk.Frame):
                 input_args={'style':'DarkDetails.TCheckbutton'})
         self.inputs['Update FITS Header'].grid(row=2, column=0, columnspan=1)
 
+        #Line 4
+        self.inputs['Median Filter'] = w.LabelInput(
+                DarkDetails, "Perform Median Filter",
+                field_spec=fields['perform_median_filter'],
+                label_args={'style':'DarkDetails.TLabel'},
+                input_args={'style':'DarkDetails.TCheckbutton'})
+        self.inputs['Median Filter'].grid(row=3, column=0, columnspan=3)
+
         DarkDetails.grid(row=0, column=0, sticky=tk.W + tk.E)
  
         self.reset()
@@ -1013,6 +1119,7 @@ class DarkDetailsConfigurationForm(tk.Frame):
         self.inputs['Filename Text'].set(fields['filename_text'])
         self.inputs['Use FITS Header'].set(fields['use_fits'])
         self.inputs['Update FITS Header'].set(fields.as_bool('update_fits'))
+        self.inputs['Median Filter'].set(fields.as_bool('perform_median_filter'))
 
     def save_form(self,fields):
         """ Save Form"""
@@ -1021,6 +1128,7 @@ class DarkDetailsConfigurationForm(tk.Frame):
         fields['filename_text'] = self.inputs['Filename Text'].get()
         fields['use_fits'] = self.inputs['Use FITS Header'].get()
         fields['update_fits'] = self.inputs['Update FITS Header'].get()
+        fields['perform_median_filter'] = self.inputs['Median Filter'].get()
 
         return fields
 
@@ -1132,6 +1240,14 @@ class FlatDetailsConfigurationForm(tk.Frame):
                 input_args={'style':'FlatDetails.TCheckbutton'})
         self.inputs['Update FITS Header Filter'].grid(row=5, column=0, columnspan=3)
 
+        #Line 7
+        self.inputs['Median Filter'] = w.LabelInput(
+                FlatDetails, "Perform Median Filter",
+                field_spec=fields['perform_median_filter'],
+                label_args={'style':'FlatDetails.TLabel'},
+                input_args={'style':'FlatDetails.TCheckbutton'})
+        self.inputs['Median Filter'].grid(row=6, column=0, columnspan=3)
+
         FlatDetails.grid(row=0, column=0, sticky=tk.W + tk.E)
  
         self.reset()
@@ -1162,6 +1278,7 @@ class FlatDetailsConfigurationForm(tk.Frame):
         self.inputs['Filename Filter Text'].set(fields['filename_text_filter'])
         self.inputs['Use FITS Header Filter'].set(fields['use_fits_filter'])
         self.inputs['Update FITS Header Filter'].set(fields.as_bool('update_fits_filter'))
+        self.inputs['Median Filter'].set(fields.as_bool('perform_median_filter'))
 
     def save_form(self,fields):
         """ Save Form"""
@@ -1173,6 +1290,7 @@ class FlatDetailsConfigurationForm(tk.Frame):
         fields['filename_text_filter'] = self.inputs['Filename Filter Text'].get()
         fields['use_fits_filter'] = self.inputs['Use FITS Header Filter'].get()
         fields['update_fits_filter'] = self.inputs['Update FITS Header Filter'].get()
+        fields['perform_median_filter'] = self.inputs['Median Filter'].get()
 
         print(repr(fields['filename_text_filter']))
 
