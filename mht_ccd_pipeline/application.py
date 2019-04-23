@@ -594,8 +594,6 @@ class Application(tk.Tk):
     def reduce_collection(self,directorylist,filemods,paths):
         """Reduce the collection"""
 
-        v.CCDReductionForm.set_status(self.ccdreductionform,'Starting Reduction Process')
-
         m.ImageCollection_Model.reductionSetupDir(self.collection,self.settings,directorylist)
 
         if self.ccdreductionform.steps['CreateDir'].get() == 'True':

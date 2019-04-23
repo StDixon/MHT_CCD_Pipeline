@@ -687,7 +687,7 @@ class ImageCollection_Model():
             self.copyFiltersFname(self.paths['flat_dir'],self.flatfilterlist,self.updatefitsfilterlist[0])
 
         if self.usefitsfilterlist[1] == 'True':
-            self.copyFilters(self.flat_ic,self.paths['flat_dir'],self.science_filters)
+            self.copyFilters(self.science_ic,self.paths['science_dir'],self.science_filters)
         else:
             self.copyFiltersFname(self.paths['science_dir'],self.sciencefilterlist,self.updatefitsfilterlist[1])
 
@@ -813,7 +813,7 @@ class ImageCollection_Model():
                         self.reduceFlat(self.paths['master_dir'],self.paths['output_dir'],self.paths['output_dir'],self.filemods['master_flat_name'] + '_' + filterType + self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + '.fit',fname_noext + self.filemods['bias_removal_mod'] + self.filemods['dark_removal_mod'] + '.fit',fname_noext + self.filemods['reduced_removal_mod'] + '.fit')
             except:
                 pass
-                
+
         print('Reduction Complete')
 
     def reductionCopyResults(self,source,destination,working):

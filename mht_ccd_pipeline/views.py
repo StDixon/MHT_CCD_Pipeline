@@ -552,31 +552,6 @@ class CCDReductionForm(tk.Frame):
 
         redstepsframe.grid(row=1, column=0, sticky=tk.W + tk.E)
 
-        # status section
-        statusframe = tk.LabelFrame(
-            self,
-            text="Reduction Status",
-            bg="grey85",
-            padx=10,
-            pady=10
-        )
-
-        # header display
-        self.inputs['Status'] = w.LabelInput(
-            statusframe, "Status",
-            field_spec={'req': False, 'type': FT.long_string},
-            input_args={"width": 80, "height": 10}
-        )
-
-        self.inputs['Status'].grid(sticky="w", row=1, column=2, padx=10, pady=10)
-
-        statusframe.grid(row=3,column=0,sticky="we")
-
-    def set_status(self,status):
-        """Set the Status"""
-
-        self.inputs['Status'].set(status)
-
 class DirectoriesConfigurationForm(tk.Frame):
     """The directories configuration form"""
     
