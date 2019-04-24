@@ -268,13 +268,8 @@ class ShowImageFileForm(tk.Frame):
 
     def load_p_image(self,image = None,*args):
 
-        print(repr(image))
-        
         if image is None:
             return[]
-
-        print(image.shape)
-        print(repr(image))
 
         width = self.p_canvas.winfo_reqwidth()       
         height = self.p_canvas.winfo_reqheight()  
@@ -286,7 +281,6 @@ class ShowImageFileForm(tk.Frame):
 
         photo = ImageTk.PhotoImage(img)
         
-        print(repr(photo))
         self.p_canvas.photolist = []
 
         self.p_canvas.create_image(0,0,image=photo,anchor="nw")
@@ -302,17 +296,20 @@ class ShowImageFileForm(tk.Frame):
 
     def load_ex_image(self,image = None,*args):
 
-        print(repr(image))
-        
-        if image is None:
+        if image is None or image[0] is None:
+            self.ex_canvas.photolist = []
+
+            self.ex_datamin.set(format(0,'.2f'))
+            self.ex_datamax.set(format(0,'.2f'))
+            self.ex_datamean.set(format(0,'.2f'))
+            self.ex_datamedian.set(format(0,'.2f'))
+            self.ex_datastddev.set(format(0,'.2f'))
+
             return[]
 
-        print(image.shape)
-        print(repr(image))
-
         width = self.ex_canvas.winfo_reqwidth()       
-        height = self.ex_canvas.winfo_reqheight()  
-        
+        height = self.ex_canvas.winfo_reqheight() 
+
         plt.imsave("tempeximgfile.png", image, cmap=plt.cm.gray)
 
         img = Image.open("tempeximgfile.png")
@@ -320,7 +317,6 @@ class ShowImageFileForm(tk.Frame):
 
         photo = ImageTk.PhotoImage(img)
         
-        print(repr(photo))
         self.ex_canvas.photolist = []
 
         self.ex_canvas.create_image(0,0,image=photo,anchor="nw")
@@ -962,7 +958,7 @@ class BiasDetailsConfigurationForm(tk.Frame):
                 field_spec=fields['update_fits'],
                 label_args={'style':'BiasDetails.TLabel'},
                 input_args={'style':'BiasDetails.TCheckbutton'})
-        self.inputs['Update FITS Header'].grid(row=2, column=0, columnspan=3)
+        self.inputs['Update FITS Header'].grid(row=2, column=0, columnspan=1)
 
         #Line 4
         self.inputs['Median Filter'] = w.LabelInput(
@@ -970,7 +966,13 @@ class BiasDetailsConfigurationForm(tk.Frame):
                 field_spec=fields['perform_median_filter'],
                 label_args={'style':'BiasDetails.TLabel'},
                 input_args={'style':'BiasDetails.TCheckbutton'})
-        self.inputs['Median Filter'].grid(row=3, column=0, columnspan=3)
+        self.inputs['Median Filter'].grid(row=3, column=0, columnspan=1)
+
+        self.inputs['Median Filter Size'] = w.LabelInput(
+                BiasDetails, "Filter Size",
+                field_spec=fields['median_filter_size'],
+                label_args={'style':'BiasDetails.TLabel'})
+        self.inputs['Median Filter Size'].grid(row=3, column=1)
 
         BiasDetails.grid(row=0, column=0, sticky=tk.W + tk.E)
  
@@ -1000,6 +1002,7 @@ class BiasDetailsConfigurationForm(tk.Frame):
         self.inputs['Use FITS Header'].set(fields['use_fits'])
         self.inputs['Update FITS Header'].set(fields.as_bool('update_fits'))
         self.inputs['Median Filter'].set(fields.as_bool('perform_median_filter'))
+        self.inputs['Median Filter Size'].set(fields['median_filter_size'])
 
     def save_form(self,fields):
         """ Save Form"""
@@ -1009,6 +1012,7 @@ class BiasDetailsConfigurationForm(tk.Frame):
         fields['use_fits'] = self.inputs['Use FITS Header'].get()
         fields['update_fits'] = self.inputs['Update FITS Header'].get()
         fields['perform_median_filter'] = self.inputs['Median Filter'].get()
+        fields['median_filter_size'] = self.inputs['Median Filter Size'].get()
 
         return fields
 
@@ -1089,7 +1093,13 @@ class DarkDetailsConfigurationForm(tk.Frame):
                 field_spec=fields['perform_median_filter'],
                 label_args={'style':'DarkDetails.TLabel'},
                 input_args={'style':'DarkDetails.TCheckbutton'})
-        self.inputs['Median Filter'].grid(row=3, column=0, columnspan=3)
+        self.inputs['Median Filter'].grid(row=3, column=0, columnspan=1)
+
+        self.inputs['Median Filter Size'] = w.LabelInput(
+                DarkDetails, "Filter Size",
+                field_spec=fields['median_filter_size'],
+                label_args={'style':'DarkDetails.TLabel'})
+        self.inputs['Median Filter Size'].grid(row=3, column=1)
 
         DarkDetails.grid(row=0, column=0, sticky=tk.W + tk.E)
  
@@ -1120,6 +1130,7 @@ class DarkDetailsConfigurationForm(tk.Frame):
         self.inputs['Use FITS Header'].set(fields['use_fits'])
         self.inputs['Update FITS Header'].set(fields.as_bool('update_fits'))
         self.inputs['Median Filter'].set(fields.as_bool('perform_median_filter'))
+        self.inputs['Median Filter Size'].set(fields['median_filter_size'])
 
     def save_form(self,fields):
         """ Save Form"""
@@ -1129,6 +1140,7 @@ class DarkDetailsConfigurationForm(tk.Frame):
         fields['use_fits'] = self.inputs['Use FITS Header'].get()
         fields['update_fits'] = self.inputs['Update FITS Header'].get()
         fields['perform_median_filter'] = self.inputs['Median Filter'].get()
+        fields['median_filter_size'] = self.inputs['Median Filter Size'].get()
 
         return fields
 
@@ -1201,7 +1213,7 @@ class FlatDetailsConfigurationForm(tk.Frame):
                 field_spec=fields['update_fits'],
                 label_args={'style':'FlatDetails.TLabel'},
                 input_args={'style':'FlatDetails.TCheckbutton'})
-        self.inputs['Update FITS Header'].grid(row=2, column=0, columnspan=3)
+        self.inputs['Update FITS Header'].grid(row=2, column=0, columnspan=1)
 
         # Line 4
         self.inputs['Filename Filter Text'] = w.LabelInput(
@@ -1238,7 +1250,7 @@ class FlatDetailsConfigurationForm(tk.Frame):
                 field_spec=fields['update_fits_filter'],
                 label_args={'style':'FlatDetails.TLabel'},
                 input_args={'style':'FlatDetails.TCheckbutton'})
-        self.inputs['Update FITS Header Filter'].grid(row=5, column=0, columnspan=3)
+        self.inputs['Update FITS Header Filter'].grid(row=5, column=0, columnspan=1)
 
         #Line 7
         self.inputs['Median Filter'] = w.LabelInput(
@@ -1246,7 +1258,13 @@ class FlatDetailsConfigurationForm(tk.Frame):
                 field_spec=fields['perform_median_filter'],
                 label_args={'style':'FlatDetails.TLabel'},
                 input_args={'style':'FlatDetails.TCheckbutton'})
-        self.inputs['Median Filter'].grid(row=6, column=0, columnspan=3)
+        self.inputs['Median Filter'].grid(row=6, column=0, columnspan=1)
+
+        self.inputs['Median Filter Size'] = w.LabelInput(
+                FlatDetails, "Filter Size",
+                field_spec=fields['median_filter_size'],
+                label_args={'style':'FlatDetails.TLabel'})
+        self.inputs['Median Filter Size'].grid(row=6, column=1)
 
         FlatDetails.grid(row=0, column=0, sticky=tk.W + tk.E)
  
@@ -1279,6 +1297,7 @@ class FlatDetailsConfigurationForm(tk.Frame):
         self.inputs['Use FITS Header Filter'].set(fields['use_fits_filter'])
         self.inputs['Update FITS Header Filter'].set(fields.as_bool('update_fits_filter'))
         self.inputs['Median Filter'].set(fields.as_bool('perform_median_filter'))
+        self.inputs['Median Filter Size'].set(fields['median_filter_size'])
 
     def save_form(self,fields):
         """ Save Form"""
@@ -1291,8 +1310,7 @@ class FlatDetailsConfigurationForm(tk.Frame):
         fields['use_fits_filter'] = self.inputs['Use FITS Header Filter'].get()
         fields['update_fits_filter'] = self.inputs['Update FITS Header Filter'].get()
         fields['perform_median_filter'] = self.inputs['Median Filter'].get()
-
-        print(repr(fields['filename_text_filter']))
+        fields['median_filter_size'] = self.inputs['Median Filter Size'].get()
 
         return fields
 
@@ -1365,7 +1383,7 @@ class ScienceDetailsConfigurationForm(tk.Frame):
                 field_spec=fields['update_fits'],
                 label_args={'style':'ScienceDetails.TLabel'},
                 input_args={'style':'ScienceDetails.TCheckbutton'})
-        self.inputs['Update FITS Header'].grid(row=2, column=0, columnspan=3)
+        self.inputs['Update FITS Header'].grid(row=2, column=0, columnspan=1)
 
         # Line 4
         self.inputs['Filename Filter Text'] = w.LabelInput(
@@ -1402,7 +1420,21 @@ class ScienceDetailsConfigurationForm(tk.Frame):
                 field_spec=fields['update_fits_filter'],
                 label_args={'style':'ScienceDetails.TLabel'},
                 input_args={'style':'ScienceDetails.TCheckbutton'})
-        self.inputs['Update FITS Header Filter'].grid(row=5, column=0, columnspan=3)
+        self.inputs['Update FITS Header Filter'].grid(row=5, column=0, columnspan=1)
+
+        #Line 7
+        self.inputs['Median Filter'] = w.LabelInput(
+                ScienceDetails, "Perform Median Filter",
+                field_spec=fields['perform_median_filter'],
+                label_args={'style':'ScienceDetails.TLabel'},
+                input_args={'style':'ScienceDetails.TCheckbutton'})
+        self.inputs['Median Filter'].grid(row=6, column=0, columnspan=1)
+
+        self.inputs['Median Filter Size'] = w.LabelInput(
+                ScienceDetails, "Filter Size",
+                field_spec=fields['median_filter_size'],
+                label_args={'style':'ScienceDetails.TLabel'})
+        self.inputs['Median Filter Size'].grid(row=6, column=1)
 
         ScienceDetails.grid(row=0, column=0, sticky=tk.W + tk.E)
  
@@ -1434,6 +1466,8 @@ class ScienceDetailsConfigurationForm(tk.Frame):
         self.inputs['Filename Filter Text'].set(fields['filename_text_filter'])
         self.inputs['Use FITS Header Filter'].set(fields['use_fits_filter'])
         self.inputs['Update FITS Header Filter'].set(fields.as_bool('update_fits_filter'))
+        self.inputs['Median Filter'].set(fields.as_bool('perform_median_filter'))
+        self.inputs['Median Filter Size'].set(fields['median_filter_size'])
 
     def save_form(self,fields):
         """ Save Form"""
@@ -1445,6 +1479,8 @@ class ScienceDetailsConfigurationForm(tk.Frame):
         fields['filename_text_filter'] = self.inputs['Filename Filter Text'].get()
         fields['use_fits_filter'] = self.inputs['Use FITS Header Filter'].get()
         fields['update_fits_filter'] = self.inputs['Update FITS Header Filter'].get()
+        fields['perform_median_filter'] = self.inputs['Median Filter'].get()
+        fields['median_filter_size'] = self.inputs['Median Filter Size'].get()
 
         return fields
 
@@ -1513,13 +1549,35 @@ class MasterDetailsConfigurationForm(tk.Frame):
                 label_args={'style':'MasterDetails.TLabel'})
         self.inputs['FITS Header Image Value Flat'].grid(row=1, column=2)
 
-        #Line 3
+        # Line 3
+        self.inputs['Median Combine Bias'] = w.LabelInput(
+                MasterDetails, "Median Combine Bias",
+                field_spec=fields['median_combine_bias'],
+                label_args={'style':'MasterDetails.TLabel'},
+                input_args={'style':'MasterDetails.TCheckbutton'})
+        self.inputs['Median Combine Bias'].grid(row=2, column=0)
+
+        self.inputs['Median Combine Dark'] = w.LabelInput(
+                MasterDetails, "Median Combine dark",
+                field_spec=fields['median_combine_dark'],
+                label_args={'style':'MasterDetails.TLabel'},
+                input_args={'style':'MasterDetails.TCheckbutton'})
+        self.inputs['Median Combine Dark'].grid(row=2, column=1)
+
+        self.inputs['Median Combine Flat'] = w.LabelInput(
+                MasterDetails, "Median Combine Flat",
+                field_spec=fields['median_combine_flat'],
+                label_args={'style':'MasterDetails.TLabel'},
+                input_args={'style':'MasterDetails.TCheckbutton'})
+        self.inputs['Median Combine Flat'].grid(row=2, column=2)
+
+        # Line 4
         self.inputs['Update FITS Header'] = w.LabelInput(
                 MasterDetails, "Update FITS Header",
                 field_spec=fields['update_fits'],
                 label_args={'style':'MasterDetails.TLabel'},
                 input_args={'style':'MasterDetails.TCheckbutton'})
-        self.inputs['Update FITS Header'].grid(row=2, column=0, columnspan=3)
+        self.inputs['Update FITS Header'].grid(row=3, column=0, columnspan=1)
         
         MasterDetails.grid(row=0, column=0, sticky=tk.W + tk.E)
  
@@ -1550,6 +1608,9 @@ class MasterDetailsConfigurationForm(tk.Frame):
         self.inputs['FITS Header Image Value Bias'].set(fields['fits_header_image_value_bias'])
         self.inputs['FITS Header Image Value Dark'].set(fields['fits_header_image_value_dark'])
         self.inputs['FITS Header Image Value Flat'].set(fields['fits_header_image_value_flat'])
+        self.inputs['Median Combine Bias'].set(fields.as_bool('median_combine_bias'))
+        self.inputs['Median Combine Dark'].set(fields.as_bool('median_combine_dark'))
+        self.inputs['Median Combine Flat'].set(fields.as_bool('median_combine_flat'))
         self.inputs['Update FITS Header'].set(fields.as_bool('update_fits'))
 
     def save_form(self,fields):
@@ -1561,6 +1622,9 @@ class MasterDetailsConfigurationForm(tk.Frame):
         fields['fits_header_image_value_bias'] = self.inputs['FITS Header Image Value Bias'].get()
         fields['fits_header_image_value_dark'] = self.inputs['FITS Header Image Value Dark'].get()
         fields['fits_header_image_value_flat'] = self.inputs['FITS Header Image Value Flat'].get()
+        fields['median_combine_bias'] = self.inputs['Median Combine Bias'].get()
+        fields['median_combine_dark'] = self.inputs['Median Combine Dark'].get()
+        fields['median_combine_flat'] = self.inputs['Median Combine Flat'].get()
         fields['update_fits'] = self.inputs['Update FITS Header'].get()
 
         return fields

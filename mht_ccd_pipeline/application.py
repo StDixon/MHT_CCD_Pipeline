@@ -315,13 +315,12 @@ class Application(tk.Tk):
         else:
             try:
                 header = self.imagefile_model.get_fileheader(filename,0)
-                print(repr(header))
+                
                 ex_header = self.imagefile_model.get_fileheader(filename,1)
-                print(repr(ex_header))
+                
                 image = self.imagefile_model.get_fileimage(filename,0)
                 ex_image = self.imagefile_model.get_fileimage(filename,1)
-                print('Here')
-                print(repr(image))
+
             except Exception as e:
                 messagebox.showerror(
                     title='Error',
@@ -488,6 +487,9 @@ class Application(tk.Tk):
         filemods['master_bias_header_value'] = self.config_model.config['master_details']['fits_header_image_value_bias']
         filemods['master_dark_header_value'] = self.config_model.config['master_details']['fits_header_image_value_dark']
         filemods['master_flat_header_value'] = self.config_model.config['master_details']['fits_header_image_value_flat']
+        filemods['median_combine_bias'] = self.config_model.config['master_details'].as_bool('median_combine_bias')
+        filemods['median_combine_dark'] = self.config_model.config['master_details'].as_bool('median_combine_dark')
+        filemods['median_combine_flat'] = self.config_model.config['master_details'].as_bool('median_combine_flat')
         filemods['save_masters'] = self.config_model.config['directories'].as_bool('save_masters')
         filemods['save_working'] = self.config_model.config['directories'].as_bool('save_working')
 
@@ -558,6 +560,18 @@ class Application(tk.Tk):
 
         sciencefilterlist = (self.config_model.config['science_details']['filename_text_filter'].split())
 
+        medianfilter = (self.config_model.config['bias_details']['perform_median_filter'],
+                        self.config_model.config['dark_details']['perform_median_filter'],
+                        self.config_model.config['flat_details']['perform_median_filter'],
+                        self.config_model.config['science_details']['perform_median_filter'],
+                        )
+
+        medianfiltersize = (self.config_model.config['bias_details']['median_filter_size'],
+                            self.config_model.config['dark_details']['median_filter_size'],
+                            self.config_model.config['flat_details']['median_filter_size'],
+                            self.config_model.config['science_details']['median_filter_size'],
+                            )
+
         directorylist = (paths['bias_dir'],
                             paths['dark_dir'],
                             paths['flat_dir'],
@@ -577,7 +591,7 @@ class Application(tk.Tk):
                 paths['source_dir'] = temp
 
                 self.collection = m.ImageCollection_Model(keywords,paths,filemods,imagelist,filelist,usefitslist,updatefitslist,
-                        usefitsfilterlist,updatefitsfilterlist,flatfilterlist,sciencefilterlist,ccd_details)
+                        usefitsfilterlist,updatefitsfilterlist,flatfilterlist,sciencefilterlist,ccd_details,medianfilter,medianfiltersize)
 
                 self.collection.status.trace('w', self.reduction_status)
 
@@ -588,7 +602,7 @@ class Application(tk.Tk):
             print('Single Pass')
 
             self.collection = m.ImageCollection_Model(keywords,paths,filemods,imagelist,filelist,usefitslist,updatefitslist,
-                    usefitsfilterlist,updatefitsfilterlist,flatfilterlist,sciencefilterlist,ccd_details)
+                    usefitsfilterlist,updatefitsfilterlist,flatfilterlist,sciencefilterlist,ccd_details,medianfilter,medianfiltersize)
 
             self.collection.status.trace('w', self.reduction_status)
 
