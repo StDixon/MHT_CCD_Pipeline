@@ -78,7 +78,7 @@ class Settings_Model:
     def __init__(self,filename='mht_settings.json',path='~'):
         # determine the file path
         self.filepath = os.path.join(os.path.expanduser(path),filename)
-
+        
         # load in saved values
         self.load()
 

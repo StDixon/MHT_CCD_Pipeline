@@ -1659,28 +1659,28 @@ class ReducedDetailsConfigurationForm(tk.Frame):
         
         # Line 1
         self.inputs['Filename Bias Stub'] = w.LabelInput(
-                ReductionDetails, "Filename Master Bias",
+                ReductionDetails, "Filename Bias Subtracted",
                 field_spec=fields['filename_bias_stub'],
                 label_args={'style':'ReductionDetails.TLabel'})
         self.inputs['Filename Bias Stub'].grid(row=0, column=0)
 
         # Line 2
         self.inputs['Filename Dark Stub'] = w.LabelInput(
-                ReductionDetails, "Filename Master Dark",
+                ReductionDetails, "Filename Dark Removed",
                 field_spec=fields['filename_dark_stub'],
                 label_args={'style':'ReductionDetails.TLabel'})
         self.inputs['Filename Dark Stub'].grid(row=1, column=0)
 
         # Line 3
         self.inputs['Filename Flat Stub'] = w.LabelInput(
-                ReductionDetails, "Filename Master Flat",
+                ReductionDetails, "Filename Flat Removed",
                 field_spec=fields['filename_flat_stub'],
                 label_args={'style':'ReductionDetails.TLabel'})
         self.inputs['Filename Flat Stub'].grid(row=2, column=0)
 
         # Line 4
         self.inputs['Filename Reduced Stub'] = w.LabelInput(
-                ReductionDetails, "Filename Master Reduced",
+                ReductionDetails, "Filename Reduced",
                 field_spec=fields['filename_reduced_stub'],
                 label_args={'style':'ReductionDetails.TLabel'})
         self.inputs['Filename Reduced Stub'].grid(row=3, column=0)
